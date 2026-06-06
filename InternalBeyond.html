@@ -502,6 +502,8 @@ body.theme-infernal .home-content{--ti:#f5f0ee;--tb:#4c1a22;--tiglow:0 1px 8px r
 .chat-msg.ai{align-self:flex-start;background:rgba(175,195,228,0.08);border:1px solid var(--glass-border);color:var(--text-primary);border-bottom-left-radius:4px}
 .chat-msg.system{align-self:center;font-size:0.72rem;color:var(--text-muted);background:none;border:none;padding:4px 8px}
 .chat-typing{align-self:flex-start;padding:12px 16px;font-size:0.88rem;color:var(--mist);animation:blink 1.2s infinite}
+.chat-load-more{align-self:center;padding:6px 18px;font-size:0.72rem;color:var(--text-muted);background:rgba(175,195,228,0.06);border:1px solid var(--glass-border);border-radius:16px;cursor:pointer;transition:all 0.3s;font-family:'Noto Sans SC',sans-serif;letter-spacing:0.04em;margin-bottom:4px}
+.chat-load-more:hover{background:rgba(175,195,228,0.14);color:var(--silver);border-color:rgba(175,195,228,0.35)}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
 .chat-input-area{display:flex;align-items:flex-end;gap:8px;padding:12px 16px;border-top:1px solid var(--glass-border)}
 .chat-input{flex:1;background:rgba(175,195,228,0.06);border:1px solid var(--glass-border);border-radius:12px;padding:12px 16px;color:var(--text-primary);font-size:0.92rem;font-family:'Noto Sans SC',sans-serif;resize:none;outline:none;max-height:100px;min-height:38px;line-height:1.5;transition:border-color 0.3s}
@@ -2250,6 +2252,8 @@ const PROVIDERS={
   custom:{name:'Custom',endpoint:'',model:'',format:'openai'}
 };
 let chatSending=false;
+const CHAT_BATCH=50;
+let _chatCache=[];let _chatLoaded=0;
 
 function onProviderChange(){
   const p=document.getElementById('api-provider').value;
@@ -2397,15 +2401,17 @@ async function selectFriend(id){
   activeFriendId=id;
   loadFriendsList();
   /* Load chat for this friend */
-  const friendMsgs=(await dbGetByIndex('chatMessages','byFriend',id)).sort((a,b)=>a.created-b.created);
+  const friendMsgs=(await dbGetByIndex('chatMessages','byFriend',id)).sort((a,b)=>(a.timestamp||a.created)-(b.timestamp||b.created));
   const container=document.getElementById('chat-full-messages');
   if(!friendMsgs.length){
     const cfg=apiConfigs.find(a=>a.id===id);
     container.innerHTML='<div class="chat-msg system">与 '+esc(cfg?.nickname||'AI')+' 的对话</div>';
+    _chatCache=[];_chatLoaded=0;
   }else{
-    container.innerHTML=friendMsgs.map(m=>'<div class="chat-msg '+(m.role==='user'?'user':'ai')+'">'+esc(m.content)+'</div>').join('');
+    _chatCache=friendMsgs;
+    _chatLoaded=CHAT_BATCH;
+    _renderBatch(container,friendMsgs,CHAT_BATCH);
   }
-  container.scrollTop=container.scrollHeight;
   /* Update mini chat header too */
   const cfg=apiConfigs.find(a=>a.id===id);
   if(cfg){
@@ -2451,14 +2457,12 @@ async function selectGroup(gid){
   if(!gMsgs.length){
     const memberNames=group.members.map(mid=>{const c=apiConfigs.find(a=>a.id===mid);return c?esc(c.nickname||c.model):'?'}).join('、');
     container.innerHTML='<div class="chat-msg system">群聊 "'+esc(group.name)+'"<br><span style="font-size:0.68rem">成员：'+memberNames+'</span></div>';
+    _chatCache=[];_chatLoaded=0;
   }else{
-    container.innerHTML=gMsgs.map(m=>{
-      const isUser=m.role==='user';
-      const label=isUser?'':('<span style="font-size:0.68rem;opacity:0.7;display:block;margin-bottom:2px">'+esc(m.senderName||'AI')+'</span>');
-      return '<div class="chat-msg '+(isUser?'user':'ai')+'">'+label+esc(m.content)+'</div>';
-    }).join('');
+    _chatCache=gMsgs;
+    _chatLoaded=CHAT_BATCH;
+    _renderBatch(container,gMsgs,CHAT_BATCH);
   }
-  container.scrollTop=container.scrollHeight;
   document.getElementById('chat-header-name').textContent=group.name;
   document.getElementById('chat-mini-title').textContent=group.name;
 }
@@ -2769,6 +2773,54 @@ function closeChatPanel(){
   document.getElementById('chat-mini').style.display='flex';
 }
 
+/* ── Chat pagination helpers ── */
+function _buildMsgEl(m){
+  const div=document.createElement('div');
+  const isUser=m.role==='user';
+  div.className='chat-msg '+(isUser?'user':'ai');
+  if(!isUser&&m.senderName){
+    const label=document.createElement('span');
+    label.style.cssText='font-size:0.68rem;opacity:0.7;display:block;margin-bottom:2px';
+    label.textContent=m.senderName;
+    div.appendChild(label);
+    div.appendChild(document.createTextNode(m.content));
+  }else{
+    div.textContent=m.content;
+  }
+  return div;
+}
+function _renderBatch(container,msgs,fromEnd){
+  const start=Math.max(0,msgs.length-fromEnd);
+  const batch=msgs.slice(start);
+  container.innerHTML='';
+  if(start>0){
+    const btn=document.createElement('button');
+    btn.className='chat-load-more';
+    btn.textContent='加载更早的消息（剩余 '+start+' 条）';
+    btn.onclick=function(){loadMoreChat(container)};
+    container.appendChild(btn);
+  }
+  batch.forEach(m=>container.appendChild(_buildMsgEl(m)));
+  container.scrollTop=container.scrollHeight;
+}
+function loadMoreChat(container){
+  if(!_chatCache.length)return;
+  const oldH=container.scrollHeight;
+  const oldT=container.scrollTop;
+  _chatLoaded+=CHAT_BATCH;
+  const start=Math.max(0,_chatCache.length-_chatLoaded);
+  const newMsgs=_chatCache.slice(start,_chatCache.length-_chatLoaded+CHAT_BATCH);
+  const oldBtn=container.querySelector('.chat-load-more');
+  if(start>0){
+    if(oldBtn)oldBtn.textContent='加载更早的消息（剩余 '+start+' 条）';
+  }else{
+    if(oldBtn)oldBtn.remove();
+  }
+  const firstMsg=container.querySelector('.chat-msg');
+  newMsgs.forEach(m=>{container.insertBefore(_buildMsgEl(m),firstMsg)});
+  container.scrollTop=oldT+(container.scrollHeight-oldH);
+}
+
 async function loadChatMessages(){
   const container=document.getElementById('chat-messages');
   try{
@@ -2776,25 +2828,12 @@ async function loadChatMessages(){
     filtered.sort((a,b)=>a.timestamp-b.timestamp);
     if(filtered.length===0){
       container.innerHTML='<div class="chat-msg system">发送消息开始对话</div>';
+      _chatCache=[];_chatLoaded=0;
       return;
     }
-    container.innerHTML='';
-    filtered.forEach(m=>{
-      const div=document.createElement('div');
-      const isUser=m.role==='user';
-      div.className='chat-msg '+(isUser?'user':'ai');
-      if(!isUser&&m.senderName){
-        const label=document.createElement('span');
-        label.style.cssText='font-size:0.68rem;opacity:0.7;display:block;margin-bottom:2px';
-        label.textContent=m.senderName;
-        div.appendChild(label);
-        div.appendChild(document.createTextNode(m.content));
-      }else{
-        div.textContent=m.content;
-      }
-      container.appendChild(div);
-    });
-    container.scrollTop=container.scrollHeight;
+    _chatCache=filtered;
+    _chatLoaded=CHAT_BATCH;
+    _renderBatch(container,filtered,CHAT_BATCH);
   }catch(e){container.innerHTML='<div class="chat-msg system">发送消息开始对话</div>'}
 }
 
