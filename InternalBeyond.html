@@ -5962,6 +5962,9 @@ body:not(.theme-infernal) .chat-music-card{background:rgba(250,253,255,.58);bord
         <div style="font-size:0.72rem;opacity:0.55;margin-top:4px;line-height:1.6">自动优化缓存命中率以降低输入费用。中转站报 400 错误时可关闭。</div>
         <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-top:10px"><input type="checkbox" id="api-cache-ttl" style="width:auto;accent-color:var(--accent)"> 长效缓存（1 小时 TTL）</label>
         <div style="font-size:0.72rem;opacity:0.55;margin-top:4px;line-height:1.6">缓存保留从 5 分钟延长至 1 小时，适合慢节奏聊天。仅 Anthropic 官方 API 生效。</div>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-top:10px"><input type="checkbox" id="api-fb-toggle" style="width:auto;accent-color:var(--accent)"> 分类器拦截后自动回退（Claude Fable 5 / Opus 5）</label>
+        <div style="font-size:0.72rem;opacity:0.55;margin-top:4px;line-height:1.6">不勾选＝被拦只提示，换个说法再发；勾选＝被拦的那一轮由回退模型在同一次请求里接手，按接手模型计费，会提示接手模型。仅 Claude (Anthropic) 官方 API 生效，用别的模型不必勾选。</div>
+        <div id="api-fb-wrap" style="margin-top:8px;display:none"><select id="api-fb" style="width:100%"><option value="default">官方默认路由（Anthropic 按拦截类别选模型）</option><option value="list">指定回退模型</option></select><div id="api-fb-models-wrap" style="margin-top:8px;display:none"><input id="api-fb-models" placeholder="回退模型，最多 3 个，逗号分隔，例：claude-opus-4-8" style="width:100%"></div></div>
       </div>
       <div class="api-form-group" style="margin-top:4px" id="api-daywrap">
         <label style="display:flex;align-items:center;gap:8px;cursor:pointer" onclick="apiToggleDays()"><span class="api-fold-btn" id="api-daycaret">&#9656;</span><span class="api-fold-label">聊天记录管理</span></label>
@@ -9999,6 +10002,7 @@ function editApi(id){
   var _mwT=document.getElementById('api-memwrite-toggle');if(_mwT)_mwT.checked=!!cfg.memWrite;/* v76 r2 */
   var _pcT=document.getElementById('api-cache-toggle');if(_pcT)_pcT.checked=cfg.promptCache!==false;
   var _ttlT=document.getElementById('api-cache-ttl');if(_ttlT)_ttlT.checked=!!cfg.cacheTtl1h;
+  try{var _fbT=document.getElementById('api-fb-toggle'),_fbS=document.getElementById('api-fb'),_fbI=document.getElementById('api-fb-models');if(_fbT){_fbT.checked=!!(cfg.fallbackMode&&cfg.fallbackMode!=='off');if(!_fbT._fbB){_fbT._fbB=1;_fbT.addEventListener('change',_fbRowD)}}if(_fbS){_fbS.value=cfg.fallbackMode==='list'?'list':'default';if(!_fbS._fbB){_fbS._fbB=1;_fbS.addEventListener('change',_fbRowD)}}if(_fbI)_fbI.value=cfg.fallbackModels||'';_fbRowD()}catch(e){}/* v60：分类器回退设置回填 */
   var thinkEl=document.getElementById('api-thinking-toggle');
   thinkEl.checked=cfg.thinkingEnabled!==false;
   thinkEl.disabled=false;/* 思考链改为可随时切换：切换会改变系统提示词，下一条消息重建一次缓存，之后恢复命中 */
@@ -10048,6 +10052,7 @@ async function saveCurrentApi(){
     amRecordOnly:!!(document.getElementById('api-automem-recordonly')&&document.getElementById('api-automem-recordonly').checked),
     promptCache:!(document.getElementById('api-cache-toggle')&&!document.getElementById('api-cache-toggle').checked),
     cacheTtl1h:!!(document.getElementById('api-cache-ttl')&&document.getElementById('api-cache-ttl').checked),
+    fallbackMode:(document.getElementById('api-fb-toggle')&&document.getElementById('api-fb-toggle').checked)?((document.getElementById('api-fb')&&document.getElementById('api-fb').value)||'default'):'off',fallbackModels:(document.getElementById('api-fb-models')&&document.getElementById('api-fb-models').value.trim())||'',/* v60：与手机端共用字段 */
     thinkingEnabled:document.getElementById('api-thinking-toggle').checked,
     beyond:{on:!!(document.getElementById('api-ib-toggle')&&document.getElementById('api-ib-toggle').checked),vis:((document.getElementById('api-ib-vis')&&document.getElementById('api-ib-vis').value)==='user')?'user':'all',post:!(document.getElementById('api-ib-post')&&!document.getElementById('api-ib-post').checked),cmt:!(document.getElementById('api-ib-cmt')&&!document.getElementById('api-ib-cmt').checked),img:!!(document.getElementById('api-ib-img')&&document.getElementById('api-ib-img').checked),view:((document.getElementById('api-ib-view')&&document.getElementById('api-ib-view').value)==='auto')?'auto':'ask'},
     memWrite:(function(){var el=document.getElementById('api-memwrite-toggle');return el?(el.checked||undefined):(existing.memWrite||undefined)})(),
@@ -14142,7 +14147,21 @@ function _cacheStableSlice(list,keepCount){
 }
 
 function _ccObj(cfg){return (cfg&&cfg.cacheTtl1h&&cfg.promptCache!==false)?{type:'ephemeral',ttl:'1h'}:{type:'ephemeral'}}
-function _ccBeta(hdrs,cfg){if(hdrs&&cfg&&cfg.cacheTtl1h&&cfg.promptCache!==false)hdrs['anthropic-beta']='extended-cache-ttl-2025-04-11';return hdrs}
+function _anthBetaAdd(hdrs,name){if(!hdrs||!name)return hdrs;var cur=String(hdrs['anthropic-beta']||'').split(',').map(function(x){return x.trim()}).filter(Boolean);if(cur.indexOf(name)<0)cur.push(name);hdrs['anthropic-beta']=cur.join(',');return hdrs}/* v60：anthropic-beta 多值合并 */
+function _ccBeta(hdrs,cfg){if(hdrs&&cfg&&cfg.cacheTtl1h&&cfg.promptCache!==false)_anthBetaAdd(hdrs,'extended-cache-ttl-2025-04-11');return hdrs}
+function _anthFallbacks(cfg,opts){if(opts&&opts._noFb)return null;var m=cfg&&cfg.fallbackMode;if(m==='default')return 'default';if(m==='list'){var arr=String(cfg.fallbackModels||'').split(/[,，;；\s]+/).map(function(x){return x.trim()}).filter(Boolean).slice(0,3).map(function(x){return{model:x}});return arr.length?arr:null}return null}
+function _fbRowD(){try{var t=document.getElementById('api-fb-toggle'),s=document.getElementById('api-fb'),w0=document.getElementById('api-fb-wrap'),w=document.getElementById('api-fb-models-wrap');var on=!!(t&&t.checked);if(w0)w0.style.display=on?'':'none';if(s&&w)w.style.display=(on&&s.value==='list')?'':'none'}catch(e){}}
+function _anthFbFeed(opts,j){try{if(!opts||!j)return;
+  if(j.type==='message_start'&&j.message&&j.message.model)opts._fbModel=String(j.message.model);else if(j.type==='message'&&j.model)opts._fbModel=String(j.model);
+  var _sd=(j.delta&&j.delta.stop_details)||(j.type==='message'&&j.stop_details)||null;if(_sd&&typeof _sd==='object')opts._fbSd=_sd;
+  var _fbk=(j.type==='content_block_start'&&j.content_block&&j.content_block.type==='fallback')?j.content_block:null;
+  if(!_fbk&&j.type==='message'&&Array.isArray(j.content))_fbk=j.content.find(function(x){return x&&x.type==='fallback'})||null;
+  if(_fbk)opts._fbSeen={from:(_fbk.from&&_fbk.from.model)||'',to:(_fbk.to&&_fbk.to.model)||''};
+}catch(e){}}/* v60：记下接手模型 / fallback 分块 / stop_details */
+function _anthFbNote(opts,finish){/* v60：回退接手 → 提示；被拦且无人接手 → 抛错，走既有的请求失败展示 */
+  try{if(opts&&opts._fbSeen&&opts._fbSeen.to){toast('这一轮被 '+(opts._fbSeen.from||'原模型')+' 的安全分类器拦下，已由 '+opts._fbSeen.to+' 接手回答');console.info('[IB] 服务端回退：'+JSON.stringify(opts._fbSeen))}}catch(e){}
+  if(String(finish||'').toLowerCase()==='refusal'){var sd=(opts&&opts._fbSd)||{},cat=(sd&&sd.category)?String(sd.category):'',ex=(sd&&sd.explanation)?String(sd.explanation):'';throw new Error('这一轮被模型的安全分类器拦下'+(cat?'（'+cat+'）':'')+(ex?'：'+ex.slice(0,200).replace(/[.。]\s*$/,''):'')+'。换个说法再发一次。')}
+}
 
 var _ibOaiCachePrev={};
 function _ibOaiCacheDiag(cfg,msgs){
@@ -14347,6 +14366,8 @@ async function callApiChatStream(cfg,messages,opts){
       if(_fcCtx&&round===0&&!full&&/tool/i.test(String(e&&e.message||e))){_fcCtx=null;msgs=messages;round--;continue}
       
       if(round===0&&!full&&!opts._noImgRetry&&_errLooksImgReject(e)&&(_ibMsgsHaveImg(msgs)||_ibMsgsHaveImg(messages))){opts._noImgRetry=true;if(_errImgSizeIssue(e)){try{toast('图片体积超过该 API 限制，已改为文字说明重发')}catch(e2){}}else if(_errImgCapabilityReject(e)){_visionDeadMark(cfg)}else{try{toast('该 API 拒收了本次图片（疑似格式或链路问题），已改为文字说明重发；未记入不支持名单')}catch(e2){}}_ibStripMsgImgs(messages);if(_fcCtx&&_fcCtx.messages&&_fcCtx.messages!==messages)_ibStripMsgImgs(_fcCtx.messages);msgs=(_fcCtx&&_fcCtx.messages)||messages;round--;continue}
+      /* v60：端点不认 fallbacks 参数（400 且报错提到它，多见于中转）→ 去掉回退参数原样重试一次 */
+      if(round===0&&!full&&!opts._noFb&&/^400\b/.test(String(e&&e.message||''))&&/fallbacks?/i.test(String(e&&e.message||''))){opts._noFb=true;round--;continue}
       /* 联网搜索：端点不认搜索参数(4xx 且非鉴权错) → 去掉搜索原样重试一次 */
       if(!opts._noWebSearch&&round===0&&!full&&typeof IBWS!=='undefined'&&IBWS.on(cfg)&&!IBWS.blocked(cfg)&&IBWS.errLooksParam(e)){opts._noWebSearch=true;IBWS.markUnsupported(cfg,e);round--;continue}
       /* ① 新款 OpenAI 系模型要求 max_completion_tokens：换参数名原额重试（不降额） */
@@ -14412,6 +14433,8 @@ async function callApiChat(cfg,messages,opts){
       if(_fcCtx&&round===0&&!full&&/tool/i.test(String(e&&e.message||e))){_fcCtx=null;msgs=messages;round--;continue}
       
       if(round===0&&!full&&!opts._noImgRetry&&_errLooksImgReject(e)&&(_ibMsgsHaveImg(msgs)||_ibMsgsHaveImg(messages))){opts._noImgRetry=true;if(_errImgSizeIssue(e)){try{toast('图片体积超过该 API 限制，已改为文字说明重发')}catch(e2){}}else if(_errImgCapabilityReject(e)){_visionDeadMark(cfg)}else{try{toast('该 API 拒收了本次图片（疑似格式或链路问题），已改为文字说明重发；未记入不支持名单')}catch(e2){}}_ibStripMsgImgs(messages);if(_fcCtx&&_fcCtx.messages&&_fcCtx.messages!==messages)_ibStripMsgImgs(_fcCtx.messages);msgs=(_fcCtx&&_fcCtx.messages)||messages;round--;continue}
+      /* v60：端点不认 fallbacks 参数（400 且报错提到它，多见于中转）→ 去掉回退参数原样重试一次 */
+      if(round===0&&!full&&!opts._noFb&&/^400\b/.test(String(e&&e.message||''))&&/fallbacks?/i.test(String(e&&e.message||''))){opts._noFb=true;round--;continue}
       /* 联网搜索：端点不认搜索参数(4xx 且非鉴权错) → 去掉搜索原样重试一次 */
       if(!opts._noWebSearch&&round===0&&!full&&typeof IBWS!=='undefined'&&IBWS.on(cfg)&&!IBWS.blocked(cfg)&&IBWS.errLooksParam(e)){opts._noWebSearch=true;IBWS.markUnsupported(cfg,e);round--;continue}
       /* ① 新款 OpenAI 系模型要求 max_completion_tokens：换参数名原额重试（不降额） */
@@ -14516,6 +14539,7 @@ async function _callApiChatStreamOnce(cfg,messages,opts){
       const chatMsgs=_msgs.filter(m=>m.role!=='system').map(m=>{if(m&&m._fc){var _c=Object.assign({},m);delete _c._fc;return _c}return{role:m.role,content:_adaptContentForApi(m.content,'anthropic')}});
       _injectAnthropicMsgCache(chatMsgs,cfg);/* 消息级缓存断点 */
       const b={model:cfg.model,max_tokens:maxTok,stream:true,messages:chatMsgs};
+      {const _fbq=_anthFallbacks(cfg,opts);if(_fbq){b.fallbacks=_fbq;_anthBetaAdd(hdrs,'server-side-fallback-2026-07-01')}}/* v60：Fable 5 / Opus 5 分类器回退 */
       if(opts._fcCtx&&opts._fcCtx.tools){b.tools=opts._fcCtx.tools.anthropic;IBFC.newAcc(opts._fcCtx)}
       try{if(typeof IBWS!=='undefined')IBWS.attach(b,'anthropic',cfg,opts)}catch(e){}
       if(sysMsg){if(cfg.promptCache!==false){b.system=[{type:'text',text:sysMsg.content,cache_control:_ccObj(cfg)}]}else{b.system=sysMsg.content}}if(cfg.temperature!=null)b.temperature=cfg.temperature;
@@ -14568,6 +14592,7 @@ async function _callApiChatStreamOnce(cfg,messages,opts){
             if(opts._fcCtx&&opts._fcCtx._acc)IBFC.feedAnthropic(opts._fcCtx._acc,j);
             if(j.type==='message_start'&&j.message&&j.message.usage){var _mu=j.message.usage;opts._tkU={i:_mu.input_tokens||0,cr:_mu.cache_read_input_tokens||0,cw:_mu.cache_creation_input_tokens||0,o:0}}
             if(j.type==='message_delta'&&j.delta&&j.delta.stop_reason)_mSetFinish(opts,j.delta.stop_reason);
+            _anthFbFeed(opts,j);/* v60 */
             if(j.type==='message_delta'&&j.usage){var _tu=opts._tkU||(opts._tkU={i:0,cr:0,cw:0,o:0});_tu.o=j.usage.output_tokens||_tu.o}/* 记账加固：改为流末统一落账（见循环收尾），中转把 usage 拆进多个 message_delta 时不再重复记行 */
             
             if(j.type==='content_block_start'&&j.content_block){
@@ -14617,7 +14642,9 @@ async function _callApiChatStreamOnce(cfg,messages,opts){
     if(_anthWebThinkMux)_anthWebThinkMux.finish();
     if(thinkingText)_mSetThink(opts,thinkingText.replace(/<\/?think(?:ing)?\b[^>]*>/gi,'').trim());
     if(opts._tkU){try{_tkRecord(cfg,opts._tkU)}catch(e2){}opts._tkU=null}/* 记账加固：流末统一落账 */
-    if(!_extAC&&_streamAbortController===ac)_streamAbortController=null;if(opts._st&&opts._st.ac===ac)opts._st.ac=null;if(_heartbeat)clearTimeout(_heartbeat);_ibwsFlushSearchMeta(opts);return fullText;
+    if(!_extAC&&_streamAbortController===ac)_streamAbortController=null;if(opts._st&&opts._st.ac===ac)opts._st.ac=null;if(_heartbeat)clearTimeout(_heartbeat);_ibwsFlushSearchMeta(opts);
+    if(fmt==='anthropic')_anthFbNote(opts,(opts._st&&opts._st.finish)||_lastApiFinish);/* v60：回退提示 / 拦截报错（无状态对象的调用方退回全局结束原因） */
+    return fullText;
   }catch(e){
     clearTimeout(tm);if(!_extAC&&_streamAbortController===ac)_streamAbortController=null;if(opts._st&&opts._st.ac===ac)opts._st.ac=null;if(_heartbeat)clearTimeout(_heartbeat);
     if(opts._tkU){try{_tkRecord(cfg,opts._tkU)}catch(e2){}opts._tkU=null}
@@ -14744,6 +14771,7 @@ async function _callApiChatOnce(cfg,messages,opts){
       'anthropic-version':'2023-06-01'};
     if(cfg.provider!=='custom'||/api\.anthropic\.com/i.test(String(cfg.endpoint||'')))hdrs['anthropic-dangerous-direct-browser-access']='true';
     _ccBeta(hdrs,cfg);
+    {const _fbq=_anthFallbacks(cfg,opts);if(_fbq){body.fallbacks=_fbq;_anthBetaAdd(hdrs,'server-side-fallback-2026-07-01')}}/* v60 */
     const ac=new AbortController();const tm=setTimeout(()=>ac.abort(),timeoutMs);
     try{
       const res=await fetch(cfg.endpoint,{method:'POST',signal:ac.signal,headers:hdrs,body:JSON.stringify(body)});
@@ -14769,6 +14797,7 @@ async function _callApiChatOnce(cfg,messages,opts){
         _out=_amr.text;
       }
       if(data.stop_reason)_mSetFinish(opts,data.stop_reason);
+      _anthFbFeed(opts,data);_anthFbNote(opts,data.stop_reason);/* v60 */
       return pack(_out,data.stop_reason==='max_tokens');
     }catch(e){clearTimeout(tm);if(e.name==='AbortError')throw new Error('请求超时');throw e}
   }
@@ -28160,7 +28189,7 @@ function refreshAcc(){try{if(!document.body.classList.contains('theme-infernal')
 
 var avLvl=0,avPh=0,_avwGrd=null,_avwGrdKey='',_avwGlow=null,_barGrd=null,_barGrdKey='';
 function _cwLight(){try{return !document.body.classList.contains('theme-infernal')}catch(e){return true}}
-function _cwBarFill(g,W,H){if(!_cwLight())return accCol;var key=W+'|'+H;if(_barGrdKey!==key||!_barGrd){_barGrd=g.createLinearGradient(0,0,W,0);_barGrd.addColorStop(0,'#a9c6ea');_barGrd.addColorStop(0.5,'#ffffff');_barGrd.addColorStop(1,'#a9c6ea');_barGrdKey=key}return _barGrd}/* v59 ①：明亮模式声波条白→浅蓝 */
+function _cwBarFill(g,W,H){if(!_cwLight())return accCol;var key=W+'|'+H;if(_barGrdKey!==key||!_barGrd){_barGrd=g.createLinearGradient(0,0,W,0);_barGrd.addColorStop(0,'#96b6e0');_barGrd.addColorStop(0.5,'#f0f5fb');_barGrd.addColorStop(1,'#96b6e0');_barGrdKey=key}return _barGrd}/* v59 ①：明亮模式声波条白→浅蓝 */
 function _cwRgb(c,fb){try{var m=String(c||'').trim().match(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i);if(m){var h=m[1];if(h.length===3)h=h[0]+h[0]+h[1]+h[1]+h[2]+h[2];return parseInt(h.slice(0,2),16)+','+parseInt(h.slice(2,4),16)+','+parseInt(h.slice(4,6),16)}var r=String(c||'').match(/rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/i);if(r)return r[1]+','+r[2]+','+r[3]}catch(e){}return fb}
 function _cwDrawAvWave(lvlT){
  var cv=byQ('.cf-avwave');if(!cv)return;
@@ -28171,7 +28200,7 @@ function _cwDrawAvWave(lvlT){
  var rm=false;try{rm=document.body.classList.contains('ib-reduce')||(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)}catch(e){}
  if(!rm)avPh+=0.014+avLvl*0.075;
  var W=cv.width,H=cv.height,mid=H/2,dark=document.body.classList.contains('theme-infernal');
- var col=dark?_cwRgb(accCol,'150,190,232'):'255,255,255',colG=dark?col:'158,196,238',key=W+'|'+col+'|'+colG;/* v59 ①：明亮模式改白线＋浅蓝柔光；暗色照旧跟主题强调色（v58 ①） */
+ var col=dark?_cwRgb(accCol,'150,190,232'):'255,255,255',colG=dark?col:'255,255,255',key=W+'|'+col+'|'+colG;/* v59 ①：明亮模式改白线＋浅蓝柔光；暗色照旧跟主题强调色（v58 ①） */
  if(_avwGrdKey!==key||!_avwGrd){_avwGrd=g.createLinearGradient(0,0,W,0);_avwGrd.addColorStop(0,'rgba('+col+',0)');_avwGrd.addColorStop(0.14,'rgba('+col+',1)');_avwGrd.addColorStop(0.86,'rgba('+col+',1)');_avwGrd.addColorStop(1,'rgba('+col+',0)');_avwGlow=g.createLinearGradient(0,0,W,0);_avwGlow.addColorStop(0,'rgba('+colG+',0)');_avwGlow.addColorStop(0.14,'rgba('+colG+',1)');_avwGlow.addColorStop(0.86,'rgba('+colG+',1)');_avwGlow.addColorStop(1,'rgba('+colG+',0)');_avwGrdKey=key}
  g.clearRect(0,0,W,H);
  var A=H*0.36*(0.12+0.88*avLvl),N=84,L=[{f:1.55,k:1,p:0,sp:1},{f:1.15,k:0.78,p:2.1,sp:-0.8},{f:1.95,k:0.62,p:4.2,sp:1.35}];
