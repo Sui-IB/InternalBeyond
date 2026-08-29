@@ -11089,7 +11089,7 @@ async function requestLetterFromSelected(){
       chatWithAi.forEach(m=>{
         const role=m.role==='user'?((about&&about.name)||'用户'):((cfg.nickname||'AI'));
         const _lt=getTextContent(m);
-        context+=role+'：'+_lt.slice(0,150)+(_lt.length>150?'…':'')+'\n';
+        context+=(m.gift?_lt:(role+'：'+_lt.slice(0,150)+(_lt.length>150?'…':'')))+'\n';/* v70 ① */
       });
     }
     /* 注入记忆 */
@@ -12661,8 +12661,18 @@ function _renderAiContent(textEl,container,text,wsResults){
   _renderSegments(textEl,text,wsResults);
 }
 
+function _giftNames(m){var c=(typeof apiConfigs!=='undefined'&&apiConfigs||[]).find(function(x){return x&&x.id===(m&&m.friendId)});return {aN:(c&&(c.nickname||c.model))||'TA',uN:((typeof _cachedUserName!=='undefined'&&_cachedUserName)||'用户')}}
+function _giftLine(m){
+  try{var g=(m&&m.gift)||{};var t=((typeof _IBGIFT!=='undefined')&&_IBGIFT[g.kind]||{}).t||g.kind||'礼物';var nm=_giftNames(m);var n=parseInt(g.n,10)||1;return '[礼物记录] '+nm.aN+' 在视频通话中向 '+nm.uN+' 送出了礼物「'+t+'」'+(n>1?' ×'+n:'')+'。'}catch(e){return String((m&&m.content)||'')}}
+function _giftSumLine(m){/* v70 ①：结束标记的 API 副本追加礼物汇总（读 callEnd.gifts） */
+  try{var gs=(m&&m.callEnd&&m.callEnd.gifts)||null;if(!gs||!(gs.total>0))return '';var nm=_giftNames(m);var ks=gs.kinds||gs.cnt||{};var ord=(typeof _IBGIFT!=='undefined')?Object.keys(_IBGIFT):[];var parts=[];ord.forEach(function(k){if(ks[k]>0)parts.push(((_IBGIFT[k]||{}).t||k)+' ×'+ks[k])});Object.keys(ks).forEach(function(k){if(ord.indexOf(k)<0&&ks[k]>0)parts.push(k+' ×'+ks[k])});return '[视频通话中 '+nm.aN+' 送给 '+nm.uN+' 的礼物：'+(parts.length?parts.join('、'):('共 '+gs.total+' 件'))+'（共 '+gs.total+' 件）]'}catch(e){return ''}}
+function _snapLine(m){/* v70 ①：TA 拍的快照同样是用户侧消息，API 副本写明拍摄者 */
+  try{var nm=_giftNames(m);return (m&&m.snap==='ai')?('[视频通话留影] 这张图是 '+nm.aN+' 在视频通话中拍下的 '+nm.uN+' 的镜头画面。'):'[视频通话快照] 这张图是视频通话中拍下的镜头画面。'}catch(e){return '[视频通话快照]'}}
 function getTextContent(msg){
   if(!msg)return '';
+  if(msg.gift)return _giftLine(msg);/* v70 ① */
+  if(msg.callEnd&&msg.callEnd.gifts&&msg.callEnd.gifts.total>0){var _gs9=_giftSumLine(msg);return String(msg.content||'')+(_gs9?'\n'+_gs9:'')}/* v70 ① */
+  if(msg.role==='user'&&msg.snap&&/^\[视频通话快照\]/.test(String(msg.content||'')))return _snapLine(msg);/* v70 ① */
   var t='';
   if(typeof msg.content==='string')t=msg.content;
   else if(Array.isArray(msg.content))t=msg.content.filter(b=>b.type==='text').map(b=>b.text||'').join('');
@@ -13620,6 +13630,7 @@ async function sendChatMessage(voiceMsg){
     const _vNative=_vmAudioNative(cfg)&&(_vtS1.direct!==false);/* 音频直发判定：能听原声的模型（「音频直发」开关默认开）不附加声学语气段 */
     const messages=history.map((m,i)=>{
       var mc=m.content||'';
+      if(m.role==='user'&&m.gift)mc=_giftLine(m);else if(m.role==='user'&&m.callEnd&&m.callEnd.gifts&&m.callEnd.gifts.total>0){var _gsL=_giftSumLine(m);if(_gsL)mc+='\n'+_gsL}else if(m.role==='user'&&/^\[视频通话快照\]/.test(mc))mc=_snapLine(m);
       
       if(m.quote&&m.quote.text)mc='[引用 '+(m.quote.name||(m.quote.role==='user'?'对方':'你'))+'的消息：'+String(m.quote.text).slice(0,300)+']\n'+mc;
       if(m.voice)mc+=(mc?'\n':'')+_voiceApiLine(m.voice,!_vNative);
@@ -15263,7 +15274,7 @@ async function generateSummary(cfg,prevSummary,newMessages,charLimit,names){
     +'要求：只记录明确发生的事实：双方明确说过的重要信息、明确表达的偏好与指令、共同做出的决定、进行中的任务与尚未解决的问题。情绪、动机与关系变化只在对方明确说出时记录，不从语气推断，也不延续旧摘要中的推断；新对话与旧摘要冲突时以新对话为准。删除寒暄、重复、已解决的旧话题。\n'
     +'字数上限 '+SUMMARY_CHAR_LIMIT+' 字，必须严格遵守。旧摘要过长时先压缩旧摘要再整合新内容。输出一段完整独立的摘要。\n\n'
     +(prevSummary?'【旧摘要】\n'+prevSummary+'\n\n':'')
-    +'【新对话】\n'+newMessages.map(m=>(m.role==='user'?uN:(m.senderName||aN))+'：'+getTextContent(m)).join('\n')+'\n\n直接输出摘要。';
+    +'【新对话】\n'+newMessages.map(m=>m.gift?getTextContent(m):((m.role==='user'?uN:(m.senderName||aN))+'：'+getTextContent(m))).join('\n')+'\n\n直接输出摘要。';/* v70 ①：礼物消息按礼物记录口径入摘要 */
   try{
     const cleanCfg=Object.assign({},cfg,{systemPrompt:''});
     const result=await callApi(cleanCfg,prompt);
@@ -23783,7 +23794,7 @@ async function generateMemoryFromChat(){
     if(m.role==='user'){speaker=userName}
     else if(isGroup){speaker=m.senderName||aiName}
     else{speaker=aiName}
-    transcript+=speaker+'：'+getTextContent(m).slice(0,300)+'\n'
+    transcript+=(m.gift?getTextContent(m):(speaker+'：'+getTextContent(m).slice(0,300)))+'\n'/* v70 ① */
   });
   let context='';
   if(cfg.systemPrompt)context+='【AI的人设背景】'+cfg.systemPrompt.slice(0,500)+'\n\n';
@@ -24062,7 +24073,7 @@ async function generateMemoryFromSelected(){
     if(m.role==='user'){speaker=userName}
     else if(isGroup){speaker=m.senderName||aiName}
     else{speaker=aiName}
-    transcript+=speaker+'：'+getTextContent(m).slice(0,300)+'\n'
+    transcript+=(m.gift?getTextContent(m):(speaker+'：'+getTextContent(m).slice(0,300)))+'\n'/* v70 ① */
   });
   let context='';
   if(cfg.systemPrompt)context+='【AI的人设背景】'+cfg.systemPrompt.slice(0,500)+'\n\n';
@@ -28058,21 +28069,21 @@ async function _callTranscript(msgId,fid){var all=(await dbGetByIndex('chatMessa
  var c=(apiConfigs||[]).find(function(x){return x.id===fid});if(!c)throw new Error('找不到通话对象');
  var ab=null;try{ab=await dbGet('about','main')}catch(e){}
  var uN=(ab&&ab.name)||'用户',aN=nmOf(c);
- var body=block.map(function(m){if(/^\[视频通话快照\]/.test(String(m.content||'')))return '（画面快照一张）';if(m.gift)return aN+'：（送出礼物 '+((_IBGIFT[m.gift.kind]||{}).t||m.gift.kind)+'）';return (m.role==='user'?uN+'：'+String(m.content||'').replace(/^\[(?:语音|视频)通话\] /,''):aN+'：'+String(m.content||''))}).join('\n');/* v63 ⑤ */
+ var body=block.map(function(m){if(/^\[视频通话快照\]/.test(String(m.content||'')))return (m.snap==='ai'?'（'+aN+' 拍了一张画面快照）':'（画面快照一张）');if(m.gift)return aN+'：（向 '+uN+' 送出礼物：'+((_IBGIFT[m.gift.kind]||{}).t||m.gift.kind)+'）';return (m.role==='user'?uN+'：'+String(m.content||'').replace(/^\[(?:语音|视频)通话\] /,''):aN+'：'+String(m.content||'').replace(/<ws_vgift\b[^>]*\/?>/gi,'').replace(/<ws_vsnap\b[^>]*\/?>/gi,'').trim())}).join('\n');/* v70 ②：礼物行写明送给谁、快照行写明谁拍、AI 行剥标签；v63 ⑤ */
  var mm=String(end.content||'').match(/时长\s*([\d:]+)\s*·\s*共\s*(\d+)\s*轮/),ce=end.callEnd||{};
  var dt=new Date(end.timestamp||Date.now()),ds=dt.getFullYear()+'年'+(dt.getMonth()+1)+'月'+dt.getDate()+'日';
- return {end:end,c:c,uN:uN,aN:aN,body:body,ds:ds,raw:raw,marker:String(end.content||'').split('\n')[0],dur:(ce.dur!=null?fmtDur(ce.dur):(mm?mm[1]:'?')),turns:(ce.turns!=null?ce.turns:(mm?mm[2]:'?'))}}
+ return {end:end,c:c,uN:uN,aN:aN,body:body,ds:ds,raw:raw,hasGift:block.some(function(m){return !!(m&&m.gift)}),marker:String(end.content||'').split('\n')[0],dur:(ce.dur!=null?fmtDur(ce.dur):(mm?mm[1]:'?')),turns:(ce.turns!=null?ce.turns:(mm?mm[2]:'?'))}}
 function _callWriter(c){try{var p=(_callS&&_callS.perApi&&_callS.perApi[c.id])||{};if(p.memApi){var w=(apiConfigs||[]).find(function(a){return a.id===p.memApi});if(w&&w.apiKey&&w.endpoint)return w}}catch(e){}return c}/* 执笔 API：独立配置里选的；没选或失效＝TA 本人 */
 function _cleanGen(txt){return String(txt||'').trim().replace(/^["'“”「」『』]+|["'“”「」『』]+$/g,'').trim()}
-function _callRecTask(aN,uN){return '这是'+aN+'与'+uN+'一次语音通话的完整文字稿（未删节）。这次通话之后，原始文字稿只在聊天界面里展示、不再计入上下文；上下文中只保留你写的这段通话记录，供后续对话参考。写一段通话记录：\n1. 第三人称、客观陈述：谈了什么、说定了什么（约定、时间、地点、待办）、双方的态度与情绪基调，以及会影响后续对话的细节。\n2. 只写通话里真实出现的内容，不推测、不补写、不评价。\n3. 用名字称呼双方，不用含混的代词开头。\n4. 100～800 字，按内容多少定长短，可以分段。\n只输出记录正文，不要标题、不要解释、不要引号。'}
+function _callRecTask(aN,uN,o9){o9=o9||{};return '这是'+aN+'与'+uN+'一次'+(o9.vid?'视频':'语音')+'通话的完整文字稿（未删节）。这次通话之后，原始文字稿只在聊天界面里展示、不再计入上下文；上下文中只保留你写的这段通话记录，供后续对话参考。写一段通话记录：\n1. 第三人称、客观陈述：谈了什么、说定了什么（约定、时间、地点、待办）、双方的态度与情绪基调，以及会影响后续对话的细节。\n2. 只写通话里真实出现的内容，不推测、不补写、不评价。\n3. 用名字称呼双方，不用含混的代词开头。\n4. 100～800 字，按内容多少定长短，可以分段。'+(o9.gift?'\n5. 文字稿里「（向 '+uN+' 送出礼物：…）」是通话界面的礼物记录：礼物是 '+aN+' 送给 '+uN+' 的，写进记录时要写明是 '+aN+' 送出的，不能写成 '+uN+' 送的。':'')+'\n只输出记录正文，不要标题、不要解释、不要引号。'}
 function _recCap(t,max){t=String(t||'').trim();if(t.length<=max)return t;var cut=t.slice(0,max),i=Math.max(cut.lastIndexOf('。'),cut.lastIndexOf('！'),cut.lastIndexOf('？'),cut.lastIndexOf('.'),cut.lastIndexOf('!'),cut.lastIndexOf('?'));return i>max*0.6?cut.slice(0,i+1):cut+'…'}/* 硬上限：超长时退到最后一个句末 */
 async function genCallRec(msgId,fid){var res=null;_recPend[msgId]=1;delete _recErr[msgId];_recPaint(msgId);
  try{await loadCALL();var T=await _callTranscript(msgId,fid),gen=_callWriter(T.c);if(!gen||!gen.apiKey||!gen.endpoint)throw new Error('没有可用的执笔 API');
-  var prompt=_callRecTask(T.aN,T.uN)+'\n\n【通话信息】'+T.ds+' · 时长 '+T.dur+' · 共 '+T.turns+' 轮\n【完整文字稿】\n'+T.body;
+  var prompt=_callRecTask(T.aN,T.uN,{vid:!!(T.end.callEnd&&T.end.callEnd.video),gift:!!T.hasGift})+'\n\n【通话信息】'+T.ds+' · 时长 '+T.dur+' · 共 '+T.turns+' 轮\n【完整文字稿】\n'+T.body;
   var txt=_recCap(_cleanGen(await callApi(Object.assign({},gen,{systemPrompt:''}),prompt)),800);if(!txt)throw new Error('生成为空');
   var ce0=T.end.callEnd||{},fold=!(ce0.transcript&&ce0.transcript.length)&&T.raw.length>0;
   res={rec:txt,recBy:nmOf(gen),recAt:Date.now()};T.end.callEnd=Object.assign({},ce0,res);
-  if(fold){T.end.callEnd.transcript=T.raw.map(function(m){return {id:m.id,role:m.role,content:String(m.content||''),timestamp:m.timestamp||0}});T.end.content=T.marker+'\n'+'【通话记录】（通话内容已压缩为下面这段记录，原始文字稿仅在聊天里展示、不再计入上下文）'+'\n'+txt}
+  if(fold){T.end.callEnd.transcript=T.raw.map(function(m){var o9={id:m.id,role:m.role,content:String(m.content||''),timestamp:m.timestamp||0};if(m.gift)o9.gift=m.gift;if(m.snap)o9.snap=m.snap;return o9});T.end.content=T.marker+'\n'+'【通话记录】（通话内容已压缩为下面这段记录，原始文字稿仅在聊天里展示、不再计入上下文）'+'\n'+txt}
   await dbPut('chatMessages',T.end);res.content=T.end.content;
   if(fold){for(var k9=0;k9<T.raw.length;k9++){var rm=T.raw[k9];rm.callFold=1;try{await dbPut('chatMessages',rm)}catch(e){}}}
  }catch(e){_recErr[msgId]=String((e&&e.message)||e).slice(0,60);toast('通话记录未生成：'+_recErr[msgId])}
@@ -28080,7 +28091,7 @@ async function genCallRec(msgId,fid){var res=null;_recPend[msgId]=1;delete _recE
 async function saveCallMemory(btn,msgId,fid){try{btn.disabled=true;btn.textContent='Saving…';
  await loadCALL();var T=await _callTranscript(msgId,fid),end=T.end;if(end.memSaved){btn.textContent='Saved ✓';return}
  var aN=T.aN,uN=T.uN,ds=T.ds;
- var prompt='你是'+aN+'，刚刚和'+uN+'挂了电话。下面是这通电话的完整文字稿（未删节）。\n请以'+aN+'的第一人称，把这通电话写成一条你想留住的记忆——像挂断电话后自己在心里回味刚才的对话那样：\n1. 记下电话是怎么开始的、聊了什么；具体的事记准（提到的事件、约定、时间地点、'+uN+'的状态和在意的事）。\n2. 也写下你的感受：'+uN+'当时的语气、让你在意或触动的瞬间、挂断后心里剩下的情绪。轻松的通话就写得轻松，要紧的事就记得认真，语气跟着这通电话本身走。\n3. 只写通话里真实出现的内容，不推测、不补写。\n4. 用名字称呼彼此，不要用含混的代词开头。\n5. 120～300 字，单段成文。\n只输出记忆正文本身，不要标题、不要解释、不要引号。\n\n【通话信息】'+ds+' · 时长 '+T.dur+' · 共 '+T.turns+' 轮\n【完整文字稿】\n'+T.body;
+ var prompt='你是'+aN+'，刚刚和'+uN+'挂了电话。下面是这通电话的完整文字稿（未删节）。\n请以'+aN+'的第一人称，把这通电话写成一条你想留住的记忆——像挂断电话后自己在心里回味刚才的对话那样：\n1. 记下电话是怎么开始的、聊了什么；具体的事记准（提到的事件、约定、时间地点、'+uN+'的状态和在意的事）。\n2. 也写下你的感受：'+uN+'当时的语气、让你在意或触动的瞬间、挂断后心里剩下的情绪。轻松的通话就写得轻松，要紧的事就记得认真，语气跟着这通电话本身走。\n3. 只写通话里真实出现的内容，不推测、不补写。\n4. 用名字称呼彼此，不要用含混的代词开头。'+(T.hasGift?'\n（文字稿里「（向 '+uN+' 送出礼物：…）」是通话界面的礼物记录：礼物是你送给 '+uN+' 的，不是 '+uN+' 送给你的。）':'')+'\n5. 120～300 字，单段成文。\n只输出记忆正文本身，不要标题、不要解释、不要引号。\n\n【通话信息】'+ds+' · 时长 '+T.dur+' · 共 '+T.turns+' 轮\n【完整文字稿】\n'+T.body;
  var gen=_callWriter(T.c);if(!gen||!gen.apiKey||!gen.endpoint)throw new Error('没有可用的执笔 API');
  var txt=_cleanGen(await callApi(Object.assign({},gen,{systemPrompt:''}),prompt));if(!txt)throw new Error('生成为空');/* 走主链路 callApi：三家格式、官方直连头、中转 CORS 口径全部沿用 */
  var sm=(txt.match(/^[^。！？!?\n]*[。！？!?]?/)||[''])[0]||txt;sm=sm.length>60?sm.slice(0,60)+'…':sm;
@@ -28402,7 +28413,7 @@ function _vgSend(kind,n){
     var g=_VG[kind];if(!g||g.on===false){kind='heart';g=_VG.heart}
     _vgCnt[kind]=(_vgCnt[kind]||0)+1;_vgTotal+=1;
     _vgBubble(g,1,kind);_vgChipUpd();if(g.fx)_fxQueue(g.fx,1);
-    var c9=cfg,um={id:'msg_'+Date.now()+'_g',role:'user',content:'[TA 送出了礼物：'+g.t+']',friendId:c9.id,timestamp:Date.now(),gift:{kind:kind,n:1,by:'ai'}};
+    var c9=cfg,um={id:'msg_'+Date.now()+'_g',role:'user',content:'[TA 送出了礼物：'+g.t+']',friendId:c9.id,timestamp:Date.now(),gift:{kind:kind,n:1,by:'ai'}};try{um.content=_giftLine(um)}catch(e){}/* v70 ①：落库正文即写明谁送给谁 */
     dbPut('chatMessages',um).then(function(){try{if(typeof activeFriendId!=='undefined'&&activeFriendId===c9.id&&!(typeof activeThreadId!=='undefined'&&activeThreadId)){var host=_chatHost();if(host){host.appendChild(giftCard(um));host.scrollTop=host.scrollHeight}}}catch(e){}}).catch(function(){});
   }catch(e){}
 }
