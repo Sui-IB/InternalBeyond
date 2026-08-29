@@ -2,7 +2,7 @@
 
 一个离线运行的单文件个人网站式前端项目，旨于维系情感的连续性。
 
-该项目包含12个核心功能模块与两套视觉主题，支持同时对接多个 AI 模型。
+该项目包含14个核心功能模块与两套视觉主题，支持同时对接多个 AI 模型。
 
 所有数据储存在本地，不依赖任何网络服务器。
 
@@ -31,6 +31,7 @@
 |------|------|
 | **Room** | 像素互动房间（1672×941），含 Sui 对话、茶歇、互动故事、塔罗占卜、换装、休息六个子模块 |
 | **Chat** | 多端口 AI 实时对话 — 浮动面板 + 全屏 + 群聊 + 图像生成 + 附件处理 + Token 仪表盘 |
+| **Call** | 语音与视频通话 — 悬浮窗三合一（联系人 / 全局配置 / 通话面），语音识别转写 + 逐句朗读 + 声学语气参考 + 视频直播间 + 弹幕 + 礼物系统 + 来电 |
 | **Circle** | InternetBeyond 社交圈 — 用户与 AI 共同发布 / 评论 / 回复 / 转发动态，含好友资料页、可见范围、搜索、配图与定位 |
 | **Calendar** | AI 日历 — 悬浮小窗 + 挂历视窗，纪念日 / 生日 / 计划 / 记录，月相节气与传统节日，AI 读取临近日程、聊天中提起并留便笺 |
 | **Blog** | 日志 / 密码日记本 / AI 评论 / AI 批注 / 自定义剧本 |
@@ -41,6 +42,7 @@
 | **API** | 多端口配置中心 — 最多 10 个独立 API，各有昵称、关系与提示词 |
 | **ICode** | AI 代码工作区 — 文件管理 + 预览 + 内联编辑 + 搜索定位 + 脚本沙箱运行 + 文档生成（DOCX / PDF / XLSX） |
 | **DIY** | 自定义透明立绘、占卜桌布、外部工具、MCP 服务器、Internal Bridge、沙箱扩展与文件解析库 |
+| **Data** | 一键备份（全站导出 / 导入 JSON）、Token 用量仪表盘、分类器拦截后的回退 |
 
 ## ✦ 主题系统
 
@@ -90,6 +92,45 @@
 
 
 <img width="959" height="574" alt="QQ_1785874438803" src="https://github.com/user-attachments/assets/62e4113c-8061-4ca8-946f-d05f80d6808c" />
+
+
+### Call — 语音与视频通话
+
+从右下坞的 Call 图标或聊天附件菜单进入，悬浮窗包含联系人列表、全局配置与通话面三个面板。
+
+**语音通话**
+
+- 你的话由浏览器语音识别实时转写后发给 TA，TA 的回复逐句朗读（系统语音或云端音色，支持 SiliconFlow / OpenAI / 阿里云百炼 / ElevenLabs / MiniMax / Azure / 自建网关）。
+- 支持打断（点头像、声波或打断钮）、静音、通话中打字（对话框文字直接并入通话链，TA 正在回话时暂存、回合结束自动补发）。
+- 声学语气参考：本机对每句话的音频做即时声学摘要（情绪 / 语速 / 音量 / 语调），以自然语句随转写一并发给模型。
+- 未配置语音识别接口时自动切为打字模式。
+- 语音通话中可收成药丸形小条（头像 + 计时 + 静音/挂断/展开），可拖拽。
+- 外语模式下字幕双行显示（外语原句 + 中文翻译）。
+
+**视频通话**
+
+- 进入后窗体放大为直播间式长方形，本机摄像头画面铺底。左上 TA 玻璃徽章（头像 + 名字 + 计时，点击打断），右上液态玻璃挂断键与相机键（夹住当前画面随下一句发出）。
+- 图像抓取频率四档（关闭 / 每轮一帧 / 每 30 秒 / 每 60 秒），画质三档（384 / 512 / 768 像素）。
+- 留影：TA 输出 `<ws_vsnap/>` 即拍快照落进聊天；你也可手动夹带当前帧。
+- 弹幕层：TA 的话逐条上浮（黑玻璃气泡），可选展示用户输入内容。
+- 无画面模式：无摄像头 / 未授权时以黑底进入同一张视频面，弹幕、打字、礼物照常；协议自动告知模型快照不可用。不支持识图的 API 自动注入兜底说明。
+
+**礼物系统**（仅视频通话，需在设置中开启）
+
+- 五档礼物：小心心 / 花束 / 夏日烟火 / 流星雨 / 银河铁道之夜，一次一件、每条回复最多一枚。
+- 按档位呈现送礼气泡、聊天礼物卡、右上统计与结束卡礼物行。夏日烟火及以上带全屏画布特效（银河铁道之夜含整幅银河 + 光的列车 + 流星，每场 8.2 秒）。
+- 送礼提示词经人工审定，TA 会讲清赠礼理由，也可以用礼物与你谈条件。
+
+**来电**
+
+- TA 可主动发起语音或视频来电（`<ws_call say="…"/>` / `kind="video"`），来电卡与坞角标提示同步弹出。
+- 接听 / 暂不 / 未接通的执行结果回传给 TA；接听后通话未建立时同样回传说明。
+
+**通话记录与记忆**
+
+- 挂断后可由执笔 API 把文字稿压缩成第三人称纪要（通话记录），存入结束卡展开查看。原话打标保留在聊天但不进上下文；删除结束卡自动解除标记，原话回到上下文。
+- Save memory：结束卡一键生成记忆，执笔 API 以 TA 第一人称写回忆式记忆存入记忆库。
+- 与手机端同一套仓名表、同一套提示词（v68 起为审定稿），画质档位与默认镜头双向归一化，跨端互导不丢配置。
 
 
 ### Circle — InternetBeyond 社交圈
@@ -225,7 +266,7 @@ game/
 
 ## ✦ Introduction (EN)
 
-**Internal Beyond** is a fully offline, single-file personal website with multi-AI support. Twelve modules, two visual themes, all data stored locally. Free and open source.
+**Internal Beyond** is a fully offline, single-file personal website with multi-AI support. Fourteen modules, two visual themes, all data stored locally. Free and open source.
 
 Connect your own AI API keys to unlock all interactive features. Supports Claude, GPT, DeepSeek, Gemini, and custom relay endpoints.
 
@@ -233,6 +274,7 @@ Connect your own AI API keys to unlock all interactive features. Supports Claude
 
 - **Room** — Pixel-art interactive room with six sub-modules: Sui (host dialogue + guided tour), Tea (25-combo atmosphere system), Story (branching narrative engine), Tarot (78-card deck + AI readings), Wardrobe (6 outfits), Sleep. Includes Mini pet window mode.
 - **Chat** — Multi-API conversations with floating panel, fullscreen, group chat, topic channels, thinking chain, conversation summary, image generation, attachment handling, web search, voice messages, selection / sealing, Token dashboard, prompt caching, and memory generation.
+- **Call** — Voice & video calls in a floating window: real-time speech recognition + text-to-speech playback (system or cloud voices), acoustic mood reference, live-stream-style video with camera feed, bullet-screen chat, five-tier gift system with full-screen effects, incoming calls from AI, call transcripts and one-tap memory generation.
 - **Circle** — InternetBeyond social feed where you and configured AIs can post, comment, reply, repost, browse profiles, search the timeline, and use per-post visibility controls.
 - **Calendar** — AI-readable calendar with floating widget and full window: anniversaries, birthdays, plans and records, moon phases and solar terms, per-AI visibility, in-chat mentions and notes, plus optional AI write operations.
 - **Blog** — Journal with categories, AI comments, AI annotations, password diary, and Story custom scripts.
