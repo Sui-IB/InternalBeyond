@@ -6140,7 +6140,14 @@ body:not(.theme-infernal) .chat-music-card{background:rgba(250,253,255,.58);bord
         <label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="api-summary-toggle" onchange="saveSummarySettings()" style="width:auto;accent-color:var(--accent)"> 启用对话摘要</label>
       </div>
       <div class="api-form-group">
-        <label>近期消息保留条数 <span style="font-weight:400;opacity:0.5;font-size:0.72rem">（默认 6）</span></label>
+        <label>摘要覆盖范围 <span style="font-weight:400;opacity:0.5;font-size:0.72rem">（默认 只保留近期）</span></label>
+        <select id="api-summary-scope" onchange="saveSummarySettings()">
+          <option value="keep" selected>只保留近期 N 条，其余交给摘要（默认）</option>
+          <option value="ctx">上下文之外：按「读取聊天记录」发原文，摘要只覆盖更早的消息</option>
+        </select>
+      </div>
+      <div class="api-form-group">
+        <label>近期消息保留条数 <span style="font-weight:400;opacity:0.5;font-size:0.72rem">（默认 6 · 仅「只保留近期」模式）</span></label>
         <select id="api-summary-keep" onchange="saveSummarySettings()">
           <option value="3">3 条</option>
           <option value="6" selected>6 条（默认）</option>
@@ -6162,6 +6169,7 @@ body:not(.theme-infernal) .chat-music-card{background:rgba(250,253,255,.58);bord
         <select id="api-summary-window" onchange="saveSummarySettings()">
           <option value="60" selected>60 条（默认，摘要上限 600 字）</option>
           <option value="100">100 条（摘要上限 800 字）</option>
+          <option value="200">200 条（摘要上限 1200 字）</option>
         </select>
       </div>
       <div style="margin-top:18px;padding-top:14px;border-top:1px solid rgba(175,195,228,0.12)">
@@ -6641,7 +6649,8 @@ i would like the room to be enough.
           <p><strong>思考链</strong>：开启后 AI 在每次回复前会先写一段思路笔记，以可折叠的文字显示在消息气泡上方。推理型模型（如 GPT-5 / o 系列）的内部推理无法通过对话接口导出，此处显示的是模型另行书写的可见笔记。此设定可随时在编辑好友时切换；切换会改变系统提示词内容，下一条消息会重建一次提示缓存，之后恢复稳定命中。</p>
           <p><strong>联网搜索</strong>：每个 API 可独立开启，AI 可在对话中检索实时网页信息。Anthropic 与 Gemini 使用官方原生搜索；OpenAI 兼容端点仅专用搜索型号支持（如 gpt-5-search-api、gpt-4o-search-preview），GPT-5 系普通型号（含 gpt-5.5）在 chat/completions 接口不提供联网搜索，如需 GPT 联网可为搜索型号单独建一个 API 配置。模型不支持搜索参数时，首次请求自动按普通请求重发，并在本会话内记住，后续轮次直接跳过，刷新页面后重新探测。搜索按厂商规则计费，可能产生额外费用。</p>
           <p><strong>图像生成</strong>：每个 API 可独立开启（默认关闭）。开启后 AI 可在对话中生成图片：图片直接显示在聊天里并自动存入 ICode，用量按生图模型名计入 Token 仪表盘（单价可在仪表盘为该模型单独设置）。仅 OpenAI 兼容与 Gemini 接口支持。另有本页「图像生成 · 全局」模块：开启后所有生图请求统一改走该处的模型 / 地址 / 密钥，关闭则回落到各 API 自己的接口——它只接管走线，不替任何 AI 打开生图权限；手机端亦有同款全局配置，两端各存一份。可随时切换；切换后下一条消息重建一次提示缓存，之后恢复稳定命中。</p>
-          <p><strong>对话摘要</strong>：开启后旧消息自动压缩为摘要注入上下文，保持长对话的连贯性。</p>
+          <p><strong>对话摘要</strong>：开启后旧消息自动压缩为摘要注入上下文，保持长对话的连贯性。摘要由 AI 写成一段笔记，挂在每条消息尾部作为后台参考，AI 不会向你复述；设置与摘要数据两端共用。<strong>覆盖范围</strong>两种：「只保留近期 N 条」每次只发最近 N 条原文、其余全交给摘要，最省额度，此时「读取聊天记录」不参与；「上下文之外」原文按「读取聊天记录」的条数发送（群聊按群聊读取条数），摘要只覆盖窗口之外更早的消息，细节最全、费用随窗口走，读取设「全部」时摘要没有可覆盖的内容。<strong>近期消息保留条数</strong>只在「只保留近期」模式生效，就是真正发给 AI 的原文条数。<strong>回看窗口</strong>决定一次摘要最多回看多少条旧消息和摘要字数上限（60 条 / 600 字、100 条 / 800 字、200 条 / 1200 字）；开启时早于窗口的消息不会被补记，之后每次只补新增部分。</p>
+          <p>每攒够 10 条新消息更新一次，在 AI 回复落库后或打开对话时后台执行；旧摘要超过上限八成时先压缩再整合；生成失败后同一对话 10 分钟内不再自动重试。<strong>摘要生成 API</strong> 可指定廉价、不带思考的模型专门执笔（带思考链的模型会把输出预算先耗在思考上，容易空返），留空则跟随对话 API。摘要请求单独计费、不走提示缓存，聊天请求里的摘要不影响前缀缓存。同一卡片下方「摘要管理」可查看与删除各对话的摘要。怎么设：想节省额度——只保留近期 20～60 条，回看 100；想细节全——上下文之外，读取 100～300 条，回看 100～200；执笔选不带思考的便宜模型。</p>
           <p><strong>语音转写</strong>：为语音消息配置外部转写接口（OpenAI 兼容），文字稿不再依赖浏览器内置识别（国内网络下 Chrome / Edge 的内置识别常连不上）。能听音频的模型（Gemini 等）无需配置，直接收到原声；听不到原声的模型会额外收到本地计算的声学语气特征（不显示在界面上），供其自行判断情绪。</p>
           <p><strong>Presence</strong>：<span class="internal-only">开启后，你离开再回来发起对话时 TA 会收到你的离开时长。可配置触发间隔。开启Sing后，TA 会收到当前你当前使用音乐播放器正在播放的曲目。</span><span class="infernal-only">让TA注意到你离开了多久。可配置触发间隔。开启Sing可以让TA知道你正在听些什么。</span></p>
           <p><strong>记忆系统设置</strong>：控制记忆注入的字符预算和截取长度。预算越高 AI 读到的记忆越多，Token 消耗也越大。</p>
@@ -6677,7 +6686,7 @@ i would like the room to be enough.
           <p><strong>刚开始聊缓存一直是 0？</strong> — 正常。对话历史太短时还没达到厂商要求的最低长度（各模型门槛不同），多聊几轮自动生效。调大「近期消息保留条数」可以加速达标。</p>
           <p><strong>聊天节奏慢怎么办？</strong> — 默认缓存保留 5 分钟，消息间隔超过这个时间就失效。可在 API 编辑器中开启「长效缓存（1 小时 TTL）」延长至 1 小时，代价是写入费略高。仅 Anthropic 官方 API 支持。</p>
           <p><strong>中途切换模型会影响吗？</strong> — 会。切走超过保留时间后，切回来的第一条需要重建一次缓存，之后恢复正常。两家厂商的缓存互相独立，切换不会清除对方的缓存。</p>
-          <p><strong>开了对话摘要会打断缓存吗？</strong> — 不会，摘要的注入位置不影响缓存命中。但对话摘要会缩短历史窗口，如果保留条数太少导致 OpenAI 端缓存命不中，建议改选 20 / 30 / 60 条「缓存友好」档位。</p>
+          <p><strong>开了对话摘要会打断缓存吗？</strong> — 不会，摘要的注入位置不影响缓存命中。但对话摘要会缩短历史窗口，如果保留条数太少导致 OpenAI 端缓存命不中，建议改选 20 / 30 / 60 条「缓存友好」档位，或把覆盖范围改为「上下文之外」——原文按读取条数发送，历史窗口不再被摘要缩短。</p>
           <p><strong>中转站报 400 错误</strong> — 部分中转站不兼容缓存附加参数，直接关闭 API 编辑器中的「提示缓存」开关即可。</p>
           <p><strong>缓存命中一直是 0 怎么排查？</strong> — 按 F12 打开浏览器控制台，搜索「IB缓存诊断」。常见原因：对话太短未达门槛、端点未回传命中字段（实际折扣以账单为准）、该模型不支持缓存（如 GPT-5 推理类模型的缓存利用率显著偏低，属正常服务端行为）。各家口径速查：豆包隐式缓存仅 doubao-seed-2.0 及之后系列与 seed-code 支持（服务端自动、前缀 ≥1024 tok、官方注明不保证命中；seed-1.6 / 1.5 只能走服务端 Context API，普通 Chat 接口天然吃不上）；Kimi 官方直连没有隐式缓存（需显式 Context Caching 按分钟计费，或改用阿里百炼部署的 kimi 模型自动命中）；智谱与百炼千问为隐式自动（命中写在 usage.prompt_tokens_details.cached_tokens）；Gemini 自 2.5 系列起才有隐式缓存（2.0 没有）；xAI 为服务端自动。命中为 0 时控制台会按端点打出对应提示。</p>
           <p><strong>哪些操作会影响命中？</strong> — 打开或浏览社交圈、日历、日志等页面完全不影响命中：逐轮变化的内容（当前时间、临近日程、在线状态、检索到的记忆、动态操作结果等）全部挂在最后一条消息的尾部，发给模型的前缀保持逐字稳定。实测口径：连续打开社交圈与日历大窗、发布一条动态、新增一条便笺后，下一条消息的 system 前缀逐字节不变。会让下一条消息重建一次缓存的，只有「改动写进前缀的内容」——编辑资料昵称或简介、公开 Blog 的增改（可见篇数大于 0 时；设为 -1 仅保留申请权限则前缀恒定）、各能力开关与权限、外部工具清单等，界面在这些开关旁均已注明；重建一次后即恢复稳定命中。</p>
@@ -7201,6 +7210,8 @@ i would like the room to be enough.
     <label>群聊名称</label>
     <input type="text" id="group-name-input" placeholder="给群聊起个名字…">
     <div id="group-rename-hint" style="display:none;font-size:0.66rem;color:var(--text-muted);margin:2px 0 10px;line-height:1.6">群名会写进系统提示：改名后 AI 从下一条消息起以新群名对话；已命中的提示缓存会随之重建一次。</div>
+    <label>群公告</label>
+    <textarea id="group-notice-input" rows="3" maxlength="2000" placeholder="群的背景设定、话题或相处规则…（写进每位成员的系统提示；留空则不注入）" style="width:100%;box-sizing:border-box;padding:8px 12px;border-radius:10px;border:1px solid var(--glass-border);background:rgba(255,255,255,0.06);color:var(--text-primary);font-size:0.85rem;font-family:inherit;line-height:1.6;resize:vertical;min-height:58px;outline:none;margin-bottom:10px"></textarea>
     <label>选择API成员（至少2个）</label>
     <div style="font-size:0.68rem;color:var(--text-muted);margin-bottom:8px;line-height:1.5">勾选顺序即为群聊发言顺序</div>
     <div class="group-api-list" id="group-api-list"></div>
@@ -9296,6 +9307,7 @@ async function _ioDoImport(){
   try{await loadApiConfigs()}catch(e){}
   try{_refreshCachedUserName()}catch(e){}
   _calEarliest=null;
+  try{await _ibMemOneLineRepairD()}catch(_e5){}
   try{if(window.IBCAL&&IBCAL.invalidate)await IBCAL.invalidate()}catch(e){}
   _ioStep('完成',100);
   var unknown=Object.keys(data).filter(function(k){return Array.isArray(data[k])&&list.indexOf(k)<0});
@@ -9514,7 +9526,7 @@ function _ibGuardInit(){
   document.addEventListener('visibilitychange',function(){if(document.visibilityState==='hidden'){if(_ibFsDirty&&_ibFsState==='granted')_ibFsSyncNow('hidden')/* 切后台即抢写一份，静默 */}});
   _ibRenderGuardPanel();
 }
-async function importAll(e){const file=e.target.files[0];if(!file)return;try{const text=await file.text();const data=JSON.parse(text);for(const _s of IB_STORES){if(_s==='music')continue;if(Array.isArray(data[_s])&&data[_s].length){try{await dbPutAll(_s,data[_s])}catch(_e){}}}await migrateLockedPosts();try{localStorage.removeItem('ib_guardMuted')}catch(e2){}var _go=document.getElementById('ib-guard-overlay');if(_go){_go.remove();_ibGuardShown=false}_ibToolsCache=null;/* 导入可能带来新的外部工具配置，使缓存失效 */await loadApiConfigs();_refreshCachedUserName();_calEarliest=null;/* 同步刷新内存缓存：API 配置、用户名头像、日历最早日期 */try{if(window.IBCAL&&IBCAL.invalidate)await IBCAL.invalidate()}catch(_e3){}/* fix-r7：同 _ioDoImport，老入口一并重建日历缓存 */toast('数据已导入');navTo(currentPage)}catch(err){toast('导入失败：文件格式错误')}e.target.value=''}
+async function importAll(e){const file=e.target.files[0];if(!file)return;try{const text=await file.text();const data=JSON.parse(text);for(const _s of IB_STORES){if(_s==='music')continue;if(Array.isArray(data[_s])&&data[_s].length){try{await dbPutAll(_s,data[_s])}catch(_e){}}}await migrateLockedPosts();try{localStorage.removeItem('ib_guardMuted')}catch(e2){}var _go=document.getElementById('ib-guard-overlay');if(_go){_go.remove();_ibGuardShown=false}_ibToolsCache=null;/* 导入可能带来新的外部工具配置，使缓存失效 */await loadApiConfigs();_refreshCachedUserName();_calEarliest=null;/* 同步刷新内存缓存：API 配置、用户名头像、日历最早日期 */try{if(window.IBCAL&&IBCAL.invalidate)await IBCAL.invalidate()}catch(_e3){}/* fix-r7：同 _ioDoImport，老入口一并重建日历缓存 */try{await _ibMemOneLineRepairD()}catch(_e4){}toast('数据已导入');navTo(currentPage)}catch(err){toast('导入失败：文件格式错误')}e.target.value=''}
 function esc(s){if(!s)return'';const d=document.createElement('div');d.textContent=s;return d.innerHTML}
 
 
@@ -10328,6 +10340,7 @@ function createGroup(){
   document.getElementById('group-dialog-confirm').textContent='创建';
   document.getElementById('group-rename-hint').style.display='none';
   document.getElementById('group-name-input').value='';
+  document.getElementById('group-notice-input').value='';/* v71：群公告 */
   document.getElementById('group-memory-toggle').checked=false;/* BUGFIX: 原先只重置思考链开关，记忆开关会残留上次的勾选 */
   document.getElementById('group-thinking-toggle').checked=false;
   _renderGroupMentionList();
@@ -10359,6 +10372,7 @@ async function openGroupManage(){
     if(idx>=0){badge.textContent=idx+1;badge.style.display=''}else{badge.style.display='none'}
   });
   document.getElementById('group-name-input').value=group.name||'';
+  document.getElementById('group-notice-input').value=group.notice||'';/* v71：群公告 */
   document.getElementById('group-memory-toggle').checked=!!group.memoryEnabled;
   document.getElementById('group-thinking-toggle').checked=!!group.thinkingEnabled;
   _renderGroupMentionList();
@@ -10381,6 +10395,7 @@ async function confirmSaveGroup(){
   if(!activeTalkers.length){toast('至少留一位现役且不开静默的成员');return}
   const renamed=group.name!==name;
   const upd=Object.assign({},group,{name:name,members:members,mentionOnly:silent,
+    notice:document.getElementById('group-notice-input').value.trim(),/* v71：群公告 */
     memoryEnabled:!!document.getElementById('group-memory-toggle').checked,
     thinkingEnabled:!!document.getElementById('group-thinking-toggle').checked});
   await dbPut('groups',upd);
@@ -10446,7 +10461,7 @@ async function confirmCreateGroup(){
   
   const silentIds=selected.filter(id=>_groupMentionOnly.has(id));
   if(silentIds.length>=selected.length){toast('至少留一位不开静默的成员');return}
-  const group={id:'group_'+Date.now(),name:name,members:selected,mentionOnly:silentIds,memoryEnabled:!!document.getElementById('group-memory-toggle').checked,thinkingEnabled:!!document.getElementById('group-thinking-toggle').checked,created:Date.now()};
+  const group={id:'group_'+Date.now(),name:name,members:selected,mentionOnly:silentIds,notice:document.getElementById('group-notice-input').value.trim(),/* v71：群公告 */memoryEnabled:!!document.getElementById('group-memory-toggle').checked,thinkingEnabled:!!document.getElementById('group-thinking-toggle').checked,created:Date.now()};
   await dbPut('groups',group);
   closeGroupDialog();
   loadFriendsList();
@@ -13206,6 +13221,7 @@ function collapseSameRole(msgs){
   while(out.length&&out[0].role!=='user')out.shift();
   return out;
 }
+const _GCALL_HIST_NOTE='\n【通话标记说明】历史消息里以「[语音通话] 」或「[视频通话] 」开头的，是 {U} 之前在群通话中说出口的话（语音识别成文字，可能有少量同音错别字）；「[语音通话已结束…]」「[视频通话已结束…]」是系统标记，表示那次通话已经挂断，标记之后若附有【通话记录】，那是那次通话的压缩纪要。这些都是过去的事，现在是普通的文字聊天。';
 
 async function sendChatMessage(voiceMsg){
   
@@ -13276,7 +13292,7 @@ async function sendChatMessage(voiceMsg){
     const glim=await getReadingLimits();
     const _vtSg=await _vtGet();/* 语音直发开关（成员是否能听原声在循环内按各自模型判定） */
     const _gSealTs=await getChatSealTimestamp(_targetFriend);
-    const gMsgs=filterSealed((await dbGetByIndex('chatMessages','byFriend',_targetFriend)).sort((a,b)=>(a.timestamp||0)-(b.timestamp||0)),_gSealTs);/* 封档线过滤 */
+    const gMsgs=filterSealed((await dbGetByIndex('chatMessages','byFriend',_targetFriend)).filter(m=>!(m&&m.callFold)).sort((a,b)=>(a.timestamp||0)-(b.timestamp||0)),_gSealTs);
     /* Group chat summary: only READ existing (no API call here) */
     let gSummaryText=null;
     const gss=await getSummarySettings();
@@ -13284,8 +13300,9 @@ async function sendChatMessage(voiceMsg){
       const gExisting=await getChatSummary(_targetFriend,null);
       if(gExisting)gSummaryText=gExisting.summary;
     }
-    const gKeepCount=gss.enabled?(gss.keepCount||6):(glim.groupChatLimit||DEFAULT_READ_GROUP_CHAT);
+    const gKeepCount=(gss.enabled&&gss.summaryScope!=='ctx')?(gss.keepCount||6):(glim.groupChatLimit||DEFAULT_READ_GROUP_CHAT);/* 本轮：覆盖范围 ctx（群聊） */
     const history=_cacheStableSlice(gMsgs,gKeepCount);/* 缓存修复：阶梯窗口，起点不再逐条滑动 */
+    const _gHistHasCall9=history.some(m=>m&&m.role==='user'&&(!!m.callEnd||/^\[(?:语音|视频)通话/.test(String(m.content||''))));
 
     let about=null;try{about=await dbGet('about','main')}catch(e){}
     const userLabel=(about&&about.name)?about.name:'用户';
@@ -13336,7 +13353,9 @@ async function sendChatMessage(voiceMsg){
           +'\n1. 你只能以"'+selfName+'"的身份发言，每次只输出你自己要说的一段话。'
           +'\n2. 绝对不要替其他成员或用户发言、代答、补写他们的台词或动作。即使用户点名了其他成员，也只回答属于你的部分，把他们的部分留给他们自己说。'
           +'\n3. 不要在回复开头加"['+selfName+']"等任何名字前缀，界面会自动标注你的名字。'
-          +'\n4. 历史消息中带[名字]前缀的内容是用户或其他成员说的话，仅供你阅读参考。';
+          +'\n4. 历史消息中带[名字]前缀的内容是用户或其他成员说的话，仅供你阅读参考。'
+          +(_gHistHasCall9?_GCALL_HIST_NOTE.replace('{U}',function(){return userLabel}):'')/* v74 ②：窗口内含（导入的）群通话消息时挂通话标记说明；没有则一字不变 */
+          +((group.notice&&String(group.notice).trim())?('\n\n【群公告】\n'+String(group.notice).trim()):'');
         const siteCtx=await buildSiteContext({includeBlogRead:false});
         if(siteCtx)sysContent+='\n\n'+siteCtx;
         /* AUTO MEMORY（群聊）：仅指令格式进 system；条目走消息尾部 */
@@ -13622,7 +13641,7 @@ async function sendChatMessage(voiceMsg){
       const existingSummary=await getChatSummary(_targetFriend,_targetThread);
       if(existingSummary)summaryText=existingSummary.summary;
     }
-    const keepCount=ss.enabled?(ss.keepCount||6):(lim.chatLimit||DEFAULT_READ_CHAT);
+    const keepCount=(ss.enabled&&ss.summaryScope!=='ctx')?(ss.keepCount||6):(lim.chatLimit||DEFAULT_READ_CHAT);/* 本轮：覆盖范围 ctx＝原文仍按读取条数发送，摘要只兜窗口之外 */
     const history=_cacheStableSlice(friendMsgs,keepCount);/* 缓存修复：阶梯窗口，起点不再逐条滑动 */
     
     /* 历史只回传用户消息与最终回答；思考内容仅在本地显示、保存和导出。 */
@@ -15177,7 +15196,7 @@ function truncateContext(text,maxChars){if(!text||text.length<=maxChars)return t
 
 /* ===== CONVERSATION SUMMARY SYSTEM ===== */
 /* 摘要触发间隔：跟随 AI 读取消息数设置，最少 8 条 */
-function _getSummaryTriggerCount(){try{var k=parseInt(document.getElementById('api-read-chat')&&document.getElementById('api-read-chat').value);if(k&&k>=5)return Math.max(8,k);return 10}catch(e){return 10}}
+function _getSummaryTriggerCount(){return SUMMARY_TRIGGER_COUNT}
 const SUMMARY_TRIGGER_COUNT=10;
 async function getSummarySettings(){
   try{const s=await dbGet('apiSettings','summarySettings');return s||{enabled:false,keepCount:6,welcomeEnabled:false,welcomeInterval:2,musicEnabled:false,summaryApiId:'',summaryWindow:60}}catch(e){return{enabled:false,keepCount:6,welcomeEnabled:false,welcomeInterval:2,musicEnabled:false,summaryApiId:'',summaryWindow:60}}
@@ -15190,13 +15209,15 @@ async function saveSummarySettings(){
     welcomeInterval:parseInt(document.getElementById('api-welcome-interval')?.value)||2,
     musicEnabled:!!document.getElementById('api-music-toggle')?.checked,
     summaryApiId:document.getElementById('api-summary-api')?.value||'',
-    summaryWindow:parseInt(document.getElementById('api-summary-window')?.value)||60};
+    summaryWindow:parseInt(document.getElementById('api-summary-window')?.value)||60,
+    summaryScope:(document.getElementById('api-summary-scope')?.value==='ctx')?'ctx':'keep'};
   await dbPut('apiSettings',s);toast('设置已保存');
 }
 async function loadSummarySettingsUI(){
   const s=await getSummarySettings();
   const t=document.getElementById('api-summary-toggle');if(t)t.checked=!!s.enabled;
   const k=document.getElementById('api-summary-keep');if(k)k.value=String(s.keepCount||6);
+  const sc=document.getElementById('api-summary-scope');if(sc)sc.value=(s.summaryScope==='ctx')?'ctx':'keep';
   const w=document.getElementById('api-welcome-toggle');if(w)w.checked=!!s.welcomeEnabled;
   const wi=document.getElementById('api-welcome-interval');if(wi)wi.value=String(s.welcomeInterval||2);
   const mu=document.getElementById('api-music-toggle');if(mu)mu.checked=!!s.musicEnabled;
@@ -15270,11 +15291,17 @@ async function generateSummary(cfg,prevSummary,newMessages,charLimit,names){
   const SUMMARY_CHAR_LIMIT=charLimit||600;
   const uN=(names&&names.user)||'用户';
   const aN=(names&&names.ai)||'AI';
-  const prompt='压缩以下对话为一段摘要。用「'+uN+'」和「'+aN+'」称呼双方。\n'
-    +'要求：只记录明确发生的事实：双方明确说过的重要信息、明确表达的偏好与指令、共同做出的决定、进行中的任务与尚未解决的问题。情绪、动机与关系变化只在对方明确说出时记录，不从语气推断，也不延续旧摘要中的推断；新对话与旧摘要冲突时以新对话为准。删除寒暄、重复、已解决的旧话题。\n'
-    +'字数上限 '+SUMMARY_CHAR_LIMIT+' 字，必须严格遵守。旧摘要过长时先压缩旧摘要再整合新内容。输出一段完整独立的摘要。\n\n'
+  const gp=(names&&names.grp)||null,gN=gp?String(gp.name||'群聊'):'',gMem=(gp&&Array.isArray(gp.members)&&gp.members.length)?gp.members.join('、'):'';
+  const prompt=(gp?('把以下群聊「'+gN+'」的对话整理成一段摘要，供群里的成员日后回看时快速找回这段相处。用「'+uN+'」称呼用户，成员一律用各自的名字称呼'+(gMem?('（'+gMem+'）'):'')+'。\n'):('把以下对话整理成一段摘要，供'+aN+'日后回看时快速找回这段相处。用「'+uN+'」和「'+aN+'」称呼双方。\n'))
+    +'写什么：\n'
+    +'1. 话题一件不漏：开头先用一两句点明这段对话主要聊了哪几件事；之后每件事都交代清楚聊的是什么、聊到哪一步——说定了什么、搁置了、还是留着下次接着聊。\n'
+    +'2. 事实为骨：'+(gp?'各人':'双方')+'明确说过的重要信息、表达过的偏好与要求、说定的事（约定、时间、地点、待办）、进行中的任务与没解决的问题。只写明确发生的，不推测、不脑补；情绪、动机与关系变化只在'+(gp?'本人':'对方')+'明确说出时记，不从语气推断，也不延续旧摘要里的推断；新对话与旧摘要冲突时以新对话为准。\n'
+    +'3. 留一点血肉：聊到兴头上的玩笑与梗、谈到要紧处'+(gp?'各人':'双方')+'的态度、'+uN+'当时的状态；特别值得记住的话原样引用一两句（加引号）。\n'
+    +'怎么写：像回忆一段聊天那样按事情顺着讲，连成段落；不列条目、不加小标题，不用「'+uN+'表示」「'+(gp?'某某':aN)+'回应称」这类报告腔；寒暄、车轱辘话、已经了结且往后用不上的旧话题删掉。\n'
+    +'字数上限 '+SUMMARY_CHAR_LIMIT+' 字，必须严格遵守。有旧摘要时把它和新对话整合成一段完整独立的新摘要：有新进展的地方改写，其余照留，过长就先压缩旧摘要再整合。\n\n'
     +(prevSummary?'【旧摘要】\n'+prevSummary+'\n\n':'')
-    +'【新对话】\n'+newMessages.map(m=>m.gift?getTextContent(m):((m.role==='user'?uN:(m.senderName||aN))+'：'+getTextContent(m))).join('\n')+'\n\n直接输出摘要。';/* v70 ①：礼物消息按礼物记录口径入摘要 */
+    +(newMessages.length?'【新对话】\n'+newMessages.map(m=>m.gift?getTextContent(m):((m.role==='user'?uN:(m.senderName||aN))+'：'+getTextContent(m))).join('\n'):'【新对话】\n（本次没有新对话——只需把旧摘要压缩到字数上限以内，按上面的取舍，话题与说定的事一件不丢。）')
+    +'\n\n直接输出摘要。';/* v70 ①：礼物消息按礼物记录口径入摘要 */
   try{
     const cleanCfg=Object.assign({},cfg,{systemPrompt:''});
     const result=await callApi(cleanCfg,prompt);
@@ -15284,11 +15311,15 @@ async function generateSummary(cfg,prevSummary,newMessages,charLimit,names){
     return text;
   }catch(e){toast('摘要生成失败：'+(e.message||'API 无法连接'));return null}
 }
-const SUMMARY_WINDOW_LIMITS={60:600,100:800};/* 窗口 → 摘要字数上限 */
-let _summarizing=false;
+const SUMMARY_WINDOW_LIMITS={60:600,100:800,200:1200};/* 窗口 → 摘要字数上限 */
+let _summarizing=false;const _sumFailCdD={};
 async function maybeSummarize(cfg,friendId,threadId,allMsgs){
   if(_summarizing)return null;_summarizing=true;
   try{return await _doSummarize(cfg,friendId,threadId,allMsgs)}finally{_summarizing=false}
+}
+async function _sumKeepD(ss,friendId){
+  if(!ss||ss.summaryScope!=='ctx')return (ss&&ss.keepCount)||6;
+  try{const lim=await getReadingLimits();return Math.max(2,String(friendId||'').startsWith('group_')?(lim.groupChatLimit||DEFAULT_READ_GROUP_CHAT):(lim.chatLimit||DEFAULT_READ_CHAT))}catch(e){return (ss&&ss.keepCount)||6}
 }
 async function _doSummarize(cfg,friendId,threadId,allMsgs){
   const ss=await getSummarySettings();if(!ss.enabled)return null;
@@ -15296,7 +15327,7 @@ async function _doSummarize(cfg,friendId,threadId,allMsgs){
   const summarySealTs=(await getChatSealTimestamp(friendId,threadId||null));
   allMsgs=filterSealed(allMsgs||[],summarySealTs);
   const existing=await getChatSummary(friendId,threadId);
-  const keepCount=ss.keepCount||6;
+  const keepCount=await _sumKeepD(ss,friendId);
   const maxWindow=ss.summaryWindow||60;
   const charLimit=SUMMARY_WINDOW_LIMITS[maxWindow]||600;
   /* 只关注最近 maxWindow+keepCount 条消息，更早的不再压缩 */
@@ -15307,7 +15338,9 @@ async function _doSummarize(cfg,friendId,threadId,allMsgs){
   if(existing&&existing.coveredUpTo){
     for(let i=0;i<windowMsgs.length;i++){if(windowMsgs[i].timestamp<=existing.coveredUpTo)coveredInWindow=i+1;else break}
   }
-  const uncovered=windowMsgs.length-coveredInWindow;
+  const _cdK=String(friendId)+'|'+(threadId||'');
+  if((_sumFailCdD[_cdK]||0)>Date.now())return existing?existing.summary:null;
+  const uncovered=windowMsgs.length-coveredInWindow-keepCount;/* 本轮（与手机端同修）：旧式没减掉保留段，「近期保留」≥触发数时条件恒真、每轮必摘；现按「攒够 10 条真·新消息」计 */
   if(uncovered<_getSummaryTriggerCount())return existing?existing.summary:null;
   const toSummarize=windowMsgs.slice(coveredInWindow,windowMsgs.length-keepCount);
   if(toSummarize.length<2)return existing?existing.summary:null;
@@ -15319,14 +15352,16 @@ async function _doSummarize(cfg,friendId,threadId,allMsgs){
   
   const _sumFriendCfg=(!String(friendId).startsWith('group_')&&typeof apiConfigs!=='undefined')?apiConfigs.find(a=>a.id===friendId):null;
   const _sumAiName=(_sumFriendCfg&&(_sumFriendCfg.nickname||_sumFriendCfg.model))||(cfg&&(cfg.nickname||cfg.model))||'AI';
+  let _sumGrp=null;try{if(String(friendId).startsWith('group_')){const _g9=await dbGet('groups',friendId);if(_g9)_sumGrp={name:_g9.name||'',members:(_g9.members||[]).map(id=>(typeof apiConfigs!=='undefined'?apiConfigs:[]).find(a=>a.id===id)).filter(Boolean).map(a=>a.nickname||a.model)}}}catch(e){}
   /* 摘要分段压缩：如果旧摘要已超过字符上限的 80%，先压缩旧摘要再整合新内容 */
   let _prevSum=existing?existing.summary:null;
   if(_prevSum&&_prevSum.length>charLimit*0.8){
     toast('正在压缩旧摘要…');
-    const _compressed=await generateSummary(sumCfg,null,[{role:'user',content:'以下是需要压缩的旧摘要：\n'+_prevSum}],Math.floor(charLimit*0.5),{user:_sumUserName,ai:_sumAiName});
+    const _compressed=await generateSummary(sumCfg,_prevSum,[],Math.floor(charLimit*0.5),{user:_sumUserName,ai:_sumAiName,grp:_sumGrp});
     if(_compressed)_prevSum=_compressed;
   }
-  const newSummary=await generateSummary(sumCfg,_prevSum,toSummarize,charLimit,{user:_sumUserName,ai:_sumAiName});
+  const newSummary=await generateSummary(sumCfg,_prevSum,toSummarize,charLimit,{user:_sumUserName,ai:_sumAiName,grp:_sumGrp});
+  if(!newSummary)_sumFailCdD[_cdK]=Date.now()+6e5;else delete _sumFailCdD[_cdK];
   if(newSummary){
     /* 摘要 API 请求期间若封档线发生变化，结果基于旧窗口，禁止落库。 */
     const latestSealTs=(await getChatSealTimestamp(friendId,threadId||null));
@@ -15351,7 +15386,7 @@ async function autoSummaryOnOpen(friendId,threadId){
     if(allMsgs.length<_getSummaryTriggerCount())return;/* 消息太少，不需要摘要 */
     /* 快速预检：是否真的有足够多未覆盖的消息（避免不必要的API调用） */
     const existing=await getChatSummary(friendId,threadId);
-    const keepCount=ss.keepCount||6;
+    const keepCount=await _sumKeepD(ss,friendId);
     const maxWindow=ss.summaryWindow||60;
     const windowStart=Math.max(0,allMsgs.length-maxWindow-keepCount);
     const windowMsgs=allMsgs.slice(windowStart);
@@ -15359,7 +15394,7 @@ async function autoSummaryOnOpen(friendId,threadId){
     if(existing&&existing.coveredUpTo){
       for(let i=0;i<windowMsgs.length;i++){if(windowMsgs[i].timestamp<=existing.coveredUpTo)coveredInWindow=i+1;else break}
     }
-    if(windowMsgs.length-coveredInWindow<_getSummaryTriggerCount())return;/* 未覆盖消息不够，跳过 */
+    if(windowMsgs.length-coveredInWindow-keepCount<_getSummaryTriggerCount())return;/* 未覆盖消息不够，跳过（本轮：同样扣掉保留段） */
     /* 确定 API 配置：1v1用好友API，群聊用第一个成员API */
     let cfg;
     if(friendId.startsWith('group_')){
@@ -15868,6 +15903,11 @@ async function _ibRtOwnerNameD(orig){
     return (c&&(c.nickname||c.model))||a.name||'AI';
   }catch(e){return 'AI'}
 }
+async function _ibMemOneLineRepairD(list){
+  var n=0;try{var rows=Array.isArray(list)?list:await dbGetAll('memories');
+    for(var i=0;i<rows.length;i++){var m=rows[i];if(!m||!m.oneLine)continue;var a=String(m.oneLine).trim();if(a&&a===String(m.summary||'').trim()){m.oneLine='';n++;try{await dbPut('memories',m)}catch(e){}}}
+  }catch(e){}return n;
+}
 async function _ibRtAnameRepairD(){/* fix-r2：一次性修复历史转发帖里存错的原作者名（原帖仍在且能解析出名字才改写；原帖已删的快照按设计原样保留） */
   try{var rows=[];try{rows=await dbGetAll('feed')}catch(e){rows=[]}
     var byId={};rows.forEach(function(x){if(x&&x.id)byId[x.id]=x});
@@ -15949,9 +15989,10 @@ async function _bpPostToMemoryD(p){/* v76 r7：动态＋评论 → 记忆库条�
     });
     var txt=('【Beyond 动态】'+new Date(p.ts||Date.now()).toLocaleDateString()+'\n'+lines.join('\n')).slice(0,600);
     var flat=String(p.text||'').replace(/\s+/g,' ').replace(/\u200b/g,'');
+    var _sm9=(/^[^。！？!?]*[。！？!?]?/.exec(flat.trim())||[''])[0].trim().slice(0,80);/* 本轮：概述取动态正文首句（机械截取，不走 API；与手机端同口径） */
     var mem={id:'mem_'+Date.now()+'_'+Math.floor(Math.random()*10000),
       title:(nm+'的动态：'+flat).slice(0,18)+'…',
-      content:txt,summary:'',oneLine:'',domain:'日常',tags:['Beyond'],
+      content:txt,summary:_sm9,oneLine:'',domain:'日常',tags:['Beyond'],
       importance:5,valence:0.5,arousal:0.3,pinned:false,resolved:false,
       visibility:'public',visibleTo:[],excludeFrom:[],
       rawSource:'Beyond动态',sourceId:p.id||'',activationCount:0,created:Date.now(),lastActivated:Date.now(),
@@ -16438,7 +16479,7 @@ function _bpBindFrdEdit(c,inf,per){
 var _ibAdvPending=[];
 function _ibAdvDrain(filterFn){if(!_ibAdvPending.length)return'';var t,keep=[];if(typeof filterFn==='function'){t=[];_ibAdvPending.forEach(function(it){(filterFn(it)?t:keep).push(it)})}else{t=_ibAdvPending}_ibAdvPending=keep;if(!t.length)return'';_ibDrainMark(function(){_ibAdvPending=t.concat(_ibAdvPending)});return '【进阶指令执行结果】\n'+t.map(function(x){return (x&&x.text!=null)?x.text:x}).join('\n')}/* fix②③：结果带归属可过滤＋失败可回灌；兼容旧的纯字符串条目 */
 function _advAttr(a,k){var m=new RegExp(k+'\\s*=\\s*"([^"]*)"','i').exec(String(a||''));return m?m[1].trim():''}
-const _MEMWRITE_INSTR_BLOCK='\n\n【记忆库写入】把值得记住的事写进记忆库：\n<ws_mem_write>记忆内容</ws_mem_write>\n- 写我们之间发生的事——经历、对话里的时刻、共同的记忆，用你自己的第一人称口吻写；不是对我的分析或画像，长期背景、偏好与指令属于记忆档案，不写在这里。\n- 每条不超过 600 字（超出会被截断）；每条回复最多写 3 次。\n- 写下的条目只有你自己能看到；我可以在 Memory 页查看、编辑或删除。\n- 可在标签上附参数（拿不准就省略）：<ws_mem_write importance="1-10" valence="0-1" arousal="0-1" tags="标签1,标签2">…</ws_mem_write>——importance 重要程度（默认 5）、valence 情绪效价（0 负面～1 正面）、arousal 情绪强度（0 平静～1 强烈）、tags 至多 5 枚。\n- 只记你认为值得回忆的事情。';
+const _MEMWRITE_INSTR_BLOCK='\n\n【记忆库写入】把值得记住的事写进记忆库：\n<ws_mem_write title="标题" summary="概述" domain="领域">记忆内容</ws_mem_write>\n- 写我们之间发生的事——经历、对话里的时刻、共同的记忆，用你自己的第一人称口吻写；不是对我的分析或画像，长期背景、偏好与指令属于记忆档案，不写在这里。\n- title、summary、domain、tags 每条都写：title 这条记忆的名字（20 字内，像日记标题）；summary 概述（用你自己的口吻，一两句话说清这是件什么事、对你意味着什么，50 字内——记忆列表里只显示标题和这一句，正文要点开才看到，所以它得能脱离正文单独成立）；domain 从 情感/日常/创作/思考 中四选一；tags 2～5 枚关键词（逗号分隔）。\n- 可选参数，拿不准就省略：importance="1-10" 重要程度（默认 5）、valence="0-1" 情绪效价（0 负面～1 正面）、arousal="0-1" 情绪强度（0 平静～1 强烈）。\n- 每条正文不超过 600 字（超出会被截断）；每条回复最多写 3 次。\n- 写下的条目只有你自己能看到；用户可以在 Memory 页查看、编辑或删除。\n- 只记你认为值得回忆的事情，琐碎事件无需重复写入。';
 
 async function _ibMemWriteExec(cfg,op,n){
   if(!(cfg&&cfg.memWrite))return{type:'mem_write',ok:false,reason:'用户未开启「记忆库写入」，请不要再输出该标签'};
@@ -16446,14 +16487,15 @@ async function _ibMemWriteExec(cfg,op,n){
   var t=String((op&&op.body)||'').trim();
   if(!t)return{type:'mem_write',ok:false,reason:(op&&op.truncated)?'输出被截断，记忆内容不完整':'记忆内容为空'};
   var txt=t.slice(0,600),flat=txt.replace(/\s+/g,' ');
-  var title=flat.slice(0,18)+(flat.length>18?'…':'');
+  var _tA9=String(_wsAttr(op.attrs||'','title')||'').replace(/\s+/g,' ').trim().slice(0,40);var title=_tA9||(flat.slice(0,18)+(flat.length>18?'…':''));
+  var sm9=String(_wsAttr(op.attrs||'','summary')||'').replace(/\s+/g,' ').trim().slice(0,80);if(!sm9)sm9=(txt.replace(/\s+/g,' ').match(/^[^。！？!?\n]*[。！？!?]?/)||[''])[0].trim().slice(0,50);/* 本轮：summary 概述参数，缺省留空（老输出零影响） */
   var imp9=parseInt(_wsAttr(op.attrs||'','importance'));if(!isFinite(imp9))imp9=5;imp9=Math.max(1,Math.min(10,imp9));
   var val9=parseFloat(_wsAttr(op.attrs||'','valence'));if(!isFinite(val9))val9=0.5;val9=Math.max(0,Math.min(1,val9));
   var aro9=parseFloat(_wsAttr(op.attrs||'','arousal'));if(!isFinite(aro9))aro9=0.3;aro9=Math.max(0,Math.min(1,aro9));
   var tg9=String(_wsAttr(op.attrs||'','tags')||'').split(/[,，、]+/).map(function(s){return s.trim()}).filter(Boolean).slice(0,5).map(function(s){return s.slice(0,12)});
-  var dom9=String(_wsAttr(op.attrs||'','domain')||'').trim().slice(0,8)||'日常';
+  var _dm9=String(_wsAttr(op.attrs||'','domain')||'').trim();var dom9=['情感','日常','创作','思考'].indexOf(_dm9)!==-1?_dm9:'日常';
   var mem={id:'mem_'+Date.now()+'_'+Math.floor(Math.random()*10000),
-    title:title,content:txt,summary:'',oneLine:'',domain:dom9,tags:tg9,
+    title:title,content:txt,summary:sm9,oneLine:'',domain:dom9,tags:tg9,
     importance:imp9,valence:val9,arousal:aro9,pinned:false,resolved:false,
     visibility:'only',visibleTo:[cfg.id],excludeFrom:[],
     rawSource:'AI写入',sourceId:'',activationCount:0,created:Date.now(),lastActivated:Date.now(),
@@ -22993,6 +23035,7 @@ async function populateMemApiFilter(){
 
 async function renderMemories(){
   const all=await dbGetAll('memories');
+  try{await _ibMemOneLineRepairD(all)}catch(e){}/* 本轮：导入手机端旧备份后进 Memory 页即清残留 */
   const domainFilter=document.getElementById('mem-filter-domain')?.value||'all';
   const statusFilter=document.getElementById('mem-filter-status')?.value||'all';
   const apiFilter=document.getElementById('mem-filter-api')?.value||'all';
@@ -23645,7 +23688,7 @@ async function quickCreateMemory(data){
   const mem={
     id:'mem_'+Date.now()+'_'+Math.floor(Math.random()*10000),
     title:data.title||'未命名记忆',
-    summary:data.summary||'',
+    summary:(String(data.summary||'').trim()||(String(data.content||'').replace(/\s+/g,' ').match(/^[^。！？!?\n]*[。！？!?]?/)||[''])[0].trim().slice(0,60)),oneLine:'',
     content:data.content||'',
     rawSource:data.source||'manual',
     sourceId:data.sourceId||'',
@@ -23655,7 +23698,7 @@ async function quickCreateMemory(data){
     arousal:data.arousal!=null?data.arousal:0.3,
     importance:data.importance||5,
     resolved:data.resolved!=null?!!data.resolved:false,pinned:false,
-    visibility:data.visibility||'public',visibleTo:[],excludeFrom:[],
+    visibility:data.visibility||'public',visibleTo:Array.isArray(data.visibleTo)?data.visibleTo:[],excludeFrom:[],/* v72：接收 visibleTo（only 口径） */
     activationCount:0,created:Date.now(),lastActivated:Date.now(),
     createdBy:data.createdBy||'user',
     createdByName:data.createdByName||'',
@@ -23743,8 +23786,8 @@ async function _generateMemoryCore(cfg,prompt,opts){
     const arousal=(v=>isNaN(v)?0.3:Math.max(0,Math.min(1,v)))(parseFloat(get('唤醒度')));
     const importance=Math.max(1,Math.min(10,parseInt(get('重要性'))||5));
     const resolved=get('是否已解决').includes('是');
-    const visibility=get('可见性').includes('私密')?'private':'public';
-    await quickCreateMemory({title,summary,content,source:opts.source||'manual',sourceId:opts.sourceId||'',domain,tags,valence,arousal,importance,resolved,visibility,
+    const _v0=get('可见性').includes('私密')?'private':'public';const _so=(_v0==='private');const visibility=_so?'only':_v0;const _vto=_so?[cfg.id]:[];
+    await quickCreateMemory({title,summary,content,source:opts.source||'manual',sourceId:opts.sourceId||'',domain,tags,valence,arousal,importance,resolved,visibility,visibleTo:_vto,
       createdBy:opts.createdBy||cfg.id,createdByName:opts.createdByName||''});
     if(_memStreamWasStopped){
       toast('记忆已截断生成：'+title);
@@ -24588,7 +24631,7 @@ function _musicSyncCardsD(){
 ['timeupdate','play','pause','loadedmetadata','ended'].forEach(function(ev){audioEl.addEventListener(ev,_musicSyncCardsD)});
 
 
-async function init(){await openDB();try{if(window._ibBeaconPurged)toast('已拦截并移除 '+window._ibBeaconPurged+' 个第三方统计脚本（Cloudflare 信标）——文件曾被在线渠道自动注入')}catch(e){}setTimeout(function(){try{_ibRtAnameRepairD()}catch(e){}},1500);/* fix-r2：哨兵启动提示＋历史转发署名一次性修复（延迟等 apiConfigs 装载完） */try{await _musicLoadLibraryD()}catch(e){}try{await _ibAdvRestoreUI()}catch(e){}try{_askGlobalRestoreUI()}catch(e){}/* 进阶指令与选项卡开关必须等 DB 打开后再读 */_ibGuardCheck();loadOutputSettings();await migrateLockedPosts();await loadApiConfigs();_refreshCachedUserName();loadPosts();loadCategories();updateBlogStats();loadAboutDisplay();_updateLastActive();_fabSyncHeight();_ibGuardInit();_vmInit();setTimeout(function(){_checkWelcomeBack(_presenceStartupLastActive)},2000)}
+async function init(){await openDB();try{if(window._ibBeaconPurged)toast('已拦截并移除 '+window._ibBeaconPurged+' 个第三方统计脚本（Cloudflare 信标）——文件曾被在线渠道自动注入')}catch(e){}setTimeout(function(){try{_ibRtAnameRepairD()}catch(e){}},1500);try{await _ibMemOneLineRepairD()}catch(e){}/* 本轮：清掉手机端双写进来的 oneLine＝summary 残留（概述与「写一句话」同句） *//* fix-r2：哨兵启动提示＋历史转发署名一次性修复（延迟等 apiConfigs 装载完） */try{await _musicLoadLibraryD()}catch(e){}try{await _ibAdvRestoreUI()}catch(e){}try{_askGlobalRestoreUI()}catch(e){}/* 进阶指令与选项卡开关必须等 DB 打开后再读 */_ibGuardCheck();loadOutputSettings();await migrateLockedPosts();await loadApiConfigs();_refreshCachedUserName();loadPosts();loadCategories();updateBlogStats();loadAboutDisplay();_updateLastActive();_fabSyncHeight();_ibGuardInit();_vmInit();setTimeout(function(){_checkWelcomeBack(_presenceStartupLastActive)},2000)}
 init();
 initChatHeader();
 setTimeout(function(){var m=document.getElementById('music-mini');if(m)m.classList.add('visible')},1800);
@@ -28096,7 +28139,7 @@ async function saveCallMemory(btn,msgId,fid){try{btn.disabled=true;btn.textConte
  var txt=_cleanGen(await callApi(Object.assign({},gen,{systemPrompt:''}),prompt));if(!txt)throw new Error('生成为空');/* 走主链路 callApi：三家格式、官方直连头、中转 CORS 口径全部沿用 */
  var sm=(txt.match(/^[^。！？!?\n]*[。！？!?]?/)||[''])[0]||txt;sm=sm.length>60?sm.slice(0,60)+'…':sm;
  var mid='';
- var data={title:'通话记忆 · '+aN+' · '+ds,summary:sm,content:txt.slice(0,3000),source:'语音通话',sourceId:msgId,domain:'日常',tags:['语音通话'],valence:0.5,arousal:0.3,importance:6,resolved:false,visibility:'private',createdBy:fid,createdByName:aN};
+ var data={title:'通话记忆 · '+aN+' · '+ds,summary:sm,content:txt.slice(0,3000),source:'语音通话',sourceId:msgId,domain:'日常',tags:['语音通话'],valence:0.5,arousal:0.3,importance:6,resolved:false,visibility:'only',visibleTo:[fid],createdBy:fid,createdByName:aN};
  if(typeof quickCreateMemory==='function')mid=await quickCreateMemory(data);
  else{var rec=Object.assign({id:'mem_'+Date.now()+'_'+Math.floor(Math.random()*10000),rawSource:'语音通话',pinned:false,visibleTo:[],excludeFrom:[],activationCount:0,created:Date.now(),lastActivated:Date.now(),editedByUser:false},data);delete rec.source;await dbPut('memories',rec);mid=rec.id}
  end.memSaved=mid||true;try{await dbPut('chatMessages',end)}catch(e){}
