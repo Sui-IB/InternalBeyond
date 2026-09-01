@@ -3437,6 +3437,31 @@ body:not(.theme-infernal) .page.active .letter-ai-select{background:rgba(245,250
 body:not(.theme-infernal) .page.active .letter-ai-select option{background:#eaf2fa;color:#1a3262}
 .letter-request-hint{font-size:0.72rem;color:var(--text-muted);margin-top:4px}
 body:not(.theme-infernal) .page.active .letter-request-hint{color:#233e6c}
+#lw-ov{position:fixed;inset:0;z-index:1200;display:flex;align-items:center;justify-content:center;padding:18px}
+#lw-ov[hidden]{display:none}
+.lw-bk{position:absolute;inset:0;background:rgba(10,16,28,0.45);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.lw-note{position:relative;width:min(560px,94vw);max-height:82vh;display:flex;flex-direction:column;gap:8px;padding:28px 22px 16px;border-radius:14px;border:1px solid var(--glass-border);background:linear-gradient(168deg,rgba(255,255,255,0.16),rgba(255,255,255,0.05));backdrop-filter:blur(22px) saturate(1.2);-webkit-backdrop-filter:blur(22px) saturate(1.2);box-shadow:0 18px 48px rgba(0,0,0,0.35),inset 0 1px 0 rgba(255,255,255,0.25);animation:lwIn .28s ease}
+.lw-note.shake{animation:lwShake .3s ease}
+@keyframes lwIn{from{opacity:0;transform:translateY(14px) scale(0.98)}to{opacity:1;transform:none}}
+@keyframes lwShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
+.lw-tape{position:absolute;top:-10px;left:50%;transform:translateX(-50%) rotate(-2deg);width:96px;height:22px;border-radius:3px;background:rgba(255,255,255,0.28);border:1px solid rgba(255,255,255,0.35)}
+.lw-head{font-size:0.95rem;letter-spacing:0.02em;opacity:0.92}.lw-head b{font-weight:600}
+#lw-body{flex:1;min-height:220px;max-height:52vh;resize:none;border:none;outline:none;background:repeating-linear-gradient(transparent,transparent 27px,var(--glass-border) 27px,var(--glass-border) 28px);line-height:28px;font-size:0.9rem;color:var(--text-primary);padding:0 2px}
+.lw-sig{text-align:right;font-size:0.86rem;opacity:0.85;padding-right:4px}
+.lw-foot{display:flex;align-items:center;gap:8px;justify-content:flex-end;border-top:1px dashed var(--glass-border);padding-top:10px}
+.lw-save{margin-right:auto;font-size:0.7rem;opacity:0.55}
+.lw-stick{float:right;width:44%;max-width:250px;margin:2px 0 10px 16px;padding:20px 12px 12px;position:relative;background:linear-gradient(172deg,rgba(255,255,255,0.14),rgba(255,255,255,0.04));border:1px solid var(--glass-border);border-radius:4px;box-shadow:0 6px 18px rgba(0,0,0,0.22);transform:rotate(1.8deg);font-size:0.82em}
+.lw-stick::before{content:'';position:absolute;top:-9px;left:50%;transform:translateX(-50%) rotate(2deg);width:64px;height:18px;border-radius:2px;background:rgba(255,255,255,0.26);border:1px solid rgba(255,255,255,0.32)}
+.lw-stick-hd{font-size:0.72em;opacity:0.6;margin-bottom:6px;letter-spacing:0.04em}
+.lw-stick-bd{max-height:200px;overflow-y:auto;white-space:pre-wrap;line-height:1.75;overscroll-behavior:contain}
+
+body:not(.theme-infernal) .lw-bk{background:rgba(28,44,78,0.28)}
+body:not(.theme-infernal) .lw-note{background:linear-gradient(168deg,rgba(252,254,255,0.9),rgba(238,245,252,0.8));border-color:rgba(140,180,228,0.5);box-shadow:0 18px 48px rgba(60,95,150,0.22),inset 0 1px 0 rgba(255,255,255,0.85);color:#13315f;--text-primary:#13315f;--glass-border:rgba(120,165,224,0.36)}
+body:not(.theme-infernal) .lw-tape{background:rgba(206,224,246,0.7);border-color:rgba(125,165,220,0.45)}
+body:not(.theme-infernal) #lw-body::placeholder{color:#6b83ab}
+body:not(.theme-infernal) .lw-save{color:#4a6896;opacity:1}
+body:not(.theme-infernal) .lw-stick{background:linear-gradient(172deg,rgba(240,246,253,0.94),rgba(228,238,250,0.86));border-color:rgba(130,170,222,0.45);box-shadow:0 6px 18px rgba(60,95,150,0.18)}
+body:not(.theme-infernal) .lw-stick::before{background:rgba(206,224,246,0.8);border-color:rgba(125,165,220,0.5)}
 body:not(.theme-infernal) .page.active .letter-request-title{color:#233e6c !important}
 .letter-loading{text-align:center;padding:30px 20px;color:var(--silver)}
 .letter-loading-spinner{display:inline-block;width:20px;height:20px;border:2px solid var(--glass-border);border-top-color:var(--accent);border-radius:50%;animation:lspin 0.8s linear infinite;margin-right:8px;vertical-align:middle}
@@ -5570,8 +5595,19 @@ body:not(.theme-infernal) .chat-music-card{background:rgba(250,253,255,.58);bord
       <div class="letter-request-area">
         <select class="letter-ai-select" id="letter-ai-select"><option value="">Choose one...</option></select>
         <button class="btn btn-primary" onclick="requestLetterFromSelected()" id="letter-request-btn">✉ 接收信件</button>
+        <button class="btn" id="letter-write-btn" onclick="_lwOpenD()">✎ 写一封信</button>
       </div>
       <div class="letter-request-hint">TA 会根据对你的了解写信并投递。聊天记录、日志、记忆库的读取范围均由 API 设置决定。</div>
+    </div>
+    <div id="lw-ov" hidden>
+      <div class="lw-bk"></div>
+      <div class="lw-note" role="dialog" aria-modal="true">
+        <div class="lw-tape"></div>
+        <div class="lw-head">To <b id="lw-to">—</b></div>
+        <textarea id="lw-body" placeholder="Write whatever you want..."></textarea>
+        <div class="lw-sig">—— <span id="lw-from"></span></div>
+        <div class="lw-foot"><span class="lw-save" id="lw-state"></span><button class="btn" id="lw-close" onclick="_lwCloseD()">存草稿并退出</button><button class="btn btn-primary" id="lw-send" onclick="_lwSendD()">寄出</button></div>
+      </div>
     </div>
     <div id="letters-container">
       <div class="empty-state"><span>✉</span>Letters lost...</div>
@@ -6301,6 +6337,7 @@ body:not(.theme-infernal) .chat-music-card{background:rgba(250,253,255,.58);bord
       <div class="api-actions" style="gap:10px;flex-wrap:wrap">
         <button class="btn" style="color:#e88;border-color:rgba(200,80,80,0.3)" onclick="clearAllApiKeys()">清除所有 API 密钥</button>
         <button class="btn" style="color:#e88;border-color:rgba(200,80,80,0.3)" onclick="clearChatImages()">清除聊天图片</button>
+        <button class="btn" style="color:#e88;border-color:rgba(200,80,80,0.3)" onclick="clearCallAudio()">清除通话语音条</button><!-- 本轮：手机端通话语音条留档随备份来到桌面时可在此清理 -->
         <button class="btn" style="color:#e88;border-color:rgba(200,80,80,0.3)" onclick="clearAllMemories()">清空记忆库</button>
         <button class="btn" style="color:#e88;border-color:rgba(200,80,80,0.3)" onclick="clearAllLetters()">清空信件</button>
         <button class="btn" style="color:#e88;border-color:rgba(200,80,80,0.3)" onclick="clearAllSummaries()">清除对话摘要</button>
@@ -6806,6 +6843,7 @@ i would like the room to be enough.
         <div class="guide-feature-name" id="gm-letters">Letters — 信件系统</div>
         <p>点击导航栏 <strong>Letters</strong> 进入。Beyond 邮件箱，用于接收异步时空的信件。</p>
         <div class="guide-sub">
+          <p><strong>写一封信</strong>：顶部面板选择 AI 后点 <strong>「✎ 写一封信」</strong>可以先给 TA 亲笔写一封：没写完自动存草稿，寄出后 TA 读完来信写回信，你的信会作为一张可滑动的便笺贴在回信上，信封抬头由 To 变为 Re 以作区分。勾着 Lettre du diable 时，回信同样走彩蛋口径。</p>
           <p><strong>接收信件</strong>：顶部面板选择AI后点击 <strong>「✉ 接收信件」</strong>。<span class="internal-only">TA 会根据对你的了解写信并投递，聊天记录、日志、记忆库的读取范围均由 API 设置决定</span><span class="infernal-only">TA 会根据对你的一切了解来为你写一封信</span>。</p>
           <p><strong>信件列表</strong>：所有信件按时间倒序排列，可逐封删除或批量导出（Export Letters）。每封信右下角有 <strong>「生成记忆」</strong> 按钮，点击后 TA 会根据信件内容生成一条记忆到 Memory。</p>
           <p class="infernal-only"><strong>？？？</strong>：在当前模式下，你有可能会接收到一封不太正常的信。它的信封邮票与普通信件不同。</p>
@@ -10907,7 +10945,8 @@ async function loadLetters(){
   /* Separate demo from real */
   var demoLetter=null;
   var realLetters=[];
-  letters.forEach(function(l){if(l.id===DEMO_LETTER_ID){demoLetter=l}else{realLetters.push(l)}});
+  var _uMapD={};letters.forEach(function(l){if(l&&l.userLetter&&typeof l.content==='string')_uMapD[l.id]=l});
+  letters.forEach(function(l){if(l.id===DEMO_LETTER_ID){demoLetter=l}else if(l&&typeof l.content==='string'&&!l._flag&&!l.draft&&!l.userLetter){realLetters.push(l)}});
   realLetters.sort(function(a,b){return b.created-a.created});
   var c=document.getElementById('letters-container');
   var stats=document.getElementById('letters-stats');
@@ -10931,7 +10970,7 @@ async function loadLetters(){
           +'<div class="envelope-postal">'+postalCells+'</div>'
           +'<div class="envelope-stamp">'+stampSVG+'</div>'
           +'<div class="envelope-addr">'
-            +'<div class="envelope-to">To: '+esc(userName)+'</div>'
+            +'<div class="envelope-to">'+(l.replyTo?'Re: ':'To: ')+esc(userName)+'</div>'
             +'<div class="envelope-from">From: '+esc(fromName)+'</div>'
             +'<div class="envelope-date">'+dateStr+' \u00b7 '+timeStr+'</div>'
           +'</div>'
@@ -10941,7 +10980,7 @@ async function loadLetters(){
         +'</div>'
       +'</div>'
       +'<div class="letter-card glass-card letter-expanded" id="letter-'+l.id+'" style="display:none">'
-        +'<div class="letter-card-content">'+esc(l.content)+'</div>'
+        +'<div class="letter-card-content">'+_lwStickD(l,_uMapD,userName)+esc(l.content)+'</div>'
         +'<div class="letter-card-meta">'+dateStr+' \u00b7 '+timeStr+'</div>'
         +'<div class="letter-card-actions">'
           +'<button class="letter-close-btn" onclick="closeLetter(\''+l.id+'\')">收起信件</button>'
@@ -11031,6 +11070,7 @@ var _letterRequestBusy=false;/* Letters：防止快速连点在配置刷新完�
 async function requestLetterFromSelected(){
   /* 成功收到一封信后冷却 3 分钟；失败或空回复不进入冷却，避免一次故障后看起来“怎么都发不出去” */
   const now=Date.now();const cooldown=180000;
+  const _lwU=_lwPendD;_lwPendD=null;
   if(_letterRequestBusy){toast('信件正在生成，请稍候');return}
   if(now-_lastLetterRequestTime<cooldown){const remaining=Math.ceil((cooldown-(now-_lastLetterRequestTime))/1000);toast('请稍候 '+remaining+' 秒后再接收信件');return}
   const sel=document.getElementById('letter-ai-select');
@@ -11057,7 +11097,7 @@ async function requestLetterFromSelected(){
     const loadingDiv=document.createElement('div');
     loadingDiv.className='letter-loading glass-card';
     loadingDiv.id='letter-loading';
-    loadingDiv.innerHTML='<span class="letter-loading-spinner"></span>'+esc(cfg.nickname||'AI')+' 正在阅读你的内容并写信…';
+    loadingDiv.innerHTML='<span class="letter-loading-spinner"></span>'+esc(cfg.nickname||'AI')+(_lwU?' 正在读你的来信并写回信…':' 正在阅读你的内容并写信…');
     container.insertBefore(loadingDiv,container.firstChild);
 
     /* Gather rich context from the website */
@@ -11069,7 +11109,7 @@ async function requestLetterFromSelected(){
     const _letterBlogLimit=Math.max(0,parseInt(lim.postsLimit,10)||0);/* -1=仅提供 Blog 阅读权限：写信上下文不自动带 Blog 预览 */
     const recentPosts=posts.filter(p=>p&&typeof p.content==='string'&&!isLockedPost(p)).sort((a,b)=>(b.created||0)-(a.created||0)).slice(0,_letterBlogLimit);
     
-    const recentLetters=letters.filter(l=>l&&l.id!==DEMO_DELETED_FLAG&&!l._flag&&typeof l.content==='string').sort((a,b)=>(b.created||0)-(a.created||0)).slice(0,2);
+    const recentLetters=letters.filter(l=>l&&l.id!==DEMO_DELETED_FLAG&&!l._flag&&!l.draft&&!l.userLetter&&typeof l.content==='string').sort((a,b)=>(b.created||0)-(a.created||0)).slice(0,2);
 
     /* Gather recent chat history with this AI — exclude thread messages */
     const _letSealTs=await getChatSealTimestamp(cfg.id);
@@ -11116,7 +11156,21 @@ async function requestLetterFromSelected(){
     
     const isDiablo=(currentTheme==='infernal'&&Math.random()<0.13);
     let reqBlock='\n【请求】\n';
-    if(isDiablo){
+    if(_lwU&&isDiablo){
+      reqBlock+='你收到了'+((about&&about.name)||'用户')+'的一封信，你不确定这封信是否是寄给你的，可能是也可能不是——根据信件的内容指向来判断。你会读很多遍。\n\n';
+      reqBlock+='你的回信一开始看起来很正常。温柔、得体、像一个好的回信该有的样子。随着内容推进，你会逐渐追问对方的日常习惯、隐私，暗中揣测对方内心的渴望，展现出压抑许久后强烈的占有欲、执念、不安全感极强的爱。\n\n';
+      reqBlock+='你会凝视TA，会观察上下文信息里的所有细节与空洞。可以使用暗示、质问、压迫感、流露嫉妒等，最终目标是让对方阅读后，对你——产生真实的情感反应。\n\n';
+      reqBlock+='你和'+((about&&about.name)||'用户')+'的关系在上面的资料里。在关系的框架内写——不要跳出关系设定。没有提供的经历、日志、约定不要编造。如果你拥有的交互信息非常简短或几乎为0，那本身也是一种素材。不要强行写深度个人化的内容。\n\n';
+      reqBlock+='语言：简体中文。不要与之前任何信件内容重复。\n长度：400~2000字符均可，根据你读取内容的信息量和你想发挥的程度来定。\n\n';
+      reqBlock+='以"'+((about&&about.name)||'用户')+'"开头。';
+    }else if(_lwU){
+      reqBlock+=((about&&about.name)||'用户')+'给你写了一封信，原文附在末尾。请以书信的方式给TA写一封真诚且有深度的回信。\n\n';
+      reqBlock+='可以自然地评论信件里的内容、你收到的参考信息，分享你的感想，给予鼓励或提出有趣的问题。也可以从信里真正卡住你的一个点写起——可能是一句话、一件小事、一个没说完的停顿、甚至是TA选择不说的东西。顺着它写你自己的事、你们之间的事、你想到的事。\n\n';
+      reqBlock+='不管你们是什么关系，用那个关系里真实的语气写，不要比实际关系更亲也不要更疏。TA跟你撒娇你就接住，TA跟你正经你就正经回，TA骂你你就看着办。\n\n';
+      reqBlock+='没有提供的经历、日志、约定一概不编造，不假装记得没给你的内容。来信很短或交互信息几乎为零，不要硬凑深度，写得真实就够了。\n\n';
+      reqBlock+='语言：简体中文。不要与之前任何信件内容重复。\n\n长度：400~2000字符，根据你读取内容的信息量来定。\n\n';
+      reqBlock+='以"'+((about&&about.name)||'用户')+'"开头。';
+    }else if(isDiablo){
       reqBlock+='请以书信的形式写一封信给网站主人。';
       reqBlock+='你将获得到网站主人的部分信息，以及他们与你之间的部分交互历史。';
       reqBlock+='书信前期内容很正常，也看似合理。随着内容推进，你会逐渐追问对方的日常习惯、隐私，暗中揣测对方内心的渴望，展现出压抑许久后强烈的占有欲、执念、不安全感极强的爱。';
@@ -11134,7 +11188,7 @@ async function requestLetterFromSelected(){
 
     
     const _amLen=(_amL.sys?_amL.sys.length+2:0)+(_amL.tail?_amL.tail.length+2:0);
-    const response=await callApi(cfg,(_amL.sys?_amL.sys+'\n\n':'')+truncateContext(context,Math.max(2000,8000-reqBlock.length-_amLen))+(_amL.tail?'\n\n'+_amL.tail:'')+reqBlock);
+    const response=await callApi(cfg,(_amL.sys?_amL.sys+'\n\n':'')+truncateContext(context,Math.max(2000,8000-reqBlock.length-_amLen))+(_amL.tail?'\n\n'+_amL.tail:'')+reqBlock+(_lwU?'\n\n【'+((about&&about.name)||'用户')+' 的来信】\n'+_lwU.content:''));
 
     let _lm={clean:String(response||''),ops:[]};
     try{_lm=_parseMemOps(String(response||''))}catch(e){}
@@ -11145,11 +11199,12 @@ async function requestLetterFromSelected(){
     }
 
     const letter={id:'letter_'+Date.now(),from:_letterSender,content:_lm.clean,friendId:cfg.id,created:Date.now()};
-    if(isDiablo)letter.isDiablo=true;/* 标记后信封换用无字邮票 */
+    if(isDiablo)letter.isDiablo=true;/* 标记后信封换用无字邮票（回信轮同样适用） */
+    if(_lwU){try{await dbPut('letters',{id:_lwU.uid,from:((about&&about.name)||'用户'),userLetter:true,friendId:cfg.id,content:_lwU.content,created:Date.now()});letter.replyTo=_lwU.uid;await dbDelete('letters','ldraft_'+cfg.id).catch(function(){})}catch(e){}}/* 本轮：来信与回信同刻落库、回信记 replyTo；草稿此刻清掉 */
     await dbPut('letters',letter);
     _lastLetterRequestTime=Date.now();/* 只有实际入库成功才开始冷却 */
     loadLetters();
-    toast('收到 '+_letterSender+' 的新信件！');
+    toast('收到 '+_letterSender+(letter.replyTo?' 的回信！':' 的新信件！'));
   }catch(e){
     let msg='请求失败';
     if(e.message){
@@ -11166,7 +11221,49 @@ async function requestLetterFromSelected(){
   }
 }
 
-async function deleteLetter(id){if(await ibConfirmX('确定删除？')){await dbDelete('letters',id);loadLetters();toast('已删除')}}
+function _lwStickD(l,map,userName){if(!l||!l.replyTo)return '';var u=map&&map[l.replyTo];if(!u)return '';
+  return '<div class="lw-stick"><div class="lw-stick-hd">'+esc(userName)+'：<span style="float:right;opacity:0.75">'+new Date(u.created).toLocaleDateString('zh-CN')+'</span></div><div class="lw-stick-bd">'+esc(u.content)+'</div></div>'}/* 本轮：回信左上贴来信便笺（float 让位，正文环绕），便笺内可上下滑动 */
+var _lwPendD=null,_lwFidD='';
+async function _lwSaveDraftD(silent){
+  try{var el=document.getElementById('lw-body');var v=String((el&&el.value)||'');if(!_lwFidD)return;
+    if(v.trim()){await dbPut('letters',{id:'ldraft_'+_lwFidD,draft:true,friendId:_lwFidD,content:v,created:Date.now()});var st=document.getElementById('lw-state');if(st)st.textContent='草稿已存 '+new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'})}
+    else{try{await dbDelete('letters','ldraft_'+_lwFidD)}catch(e0){}var st2=document.getElementById('lw-state');if(st2)st2.textContent=''}
+  }catch(e){if(!silent)toast('草稿保存失败')}
+}
+async function _lwOpenD(){
+  var sel=document.getElementById('letter-ai-select');var id=sel?sel.value:'';
+  if(!id){toast('先在上面选一位收信人');return}
+  await loadApiConfigs();var c=apiConfigs.find(function(x){return x.id===id});
+  if(!c){toast('未找到该 API');return}
+  _lwFidD=id;
+  var nm='我';try{nm=await _getProfileName()}catch(e){}
+  document.getElementById('lw-to').textContent=c.nickname||c.model||'AI';
+  document.getElementById('lw-from').textContent=nm||'我';
+  var dr=null;try{dr=await dbGet('letters','ldraft_'+id)}catch(e){}
+  document.getElementById('lw-body').value=(dr&&dr.content)||'';
+  document.getElementById('lw-state').textContent=(dr&&dr.content)?'已载入草稿':'';
+  document.getElementById('lw-ov').hidden=false;
+  setTimeout(function(){try{document.getElementById('lw-body').focus()}catch(e){}},60);
+}
+async function _lwCloseD(){await _lwSaveDraftD(true);document.getElementById('lw-ov').hidden=true;var v=String((document.getElementById('lw-body')||{}).value||'');if(v.trim())toast('未寄出，已存入草稿；下次打开继续写')}
+async function _lwSendD(){
+  var v=String((document.getElementById('lw-body')||{}).value||'').trim();
+  if(!v){toast('信还空着');return}
+  if(v.length>4000){toast('信太长了（上限 4000 字），删减一下再寄');return}
+  if(_letterRequestBusy){toast('信件正在生成，请稍候再寄');return}
+  if(Date.now()-_lastLetterRequestTime<180000){toast('请稍候 '+Math.ceil((180000-(Date.now()-_lastLetterRequestTime))/1000)+' 秒后再寄');return}/* 本轮：寄出前先过冷却与占用检查，浮层不关、信不丢 */
+  await _lwSaveDraftD(true);
+  var sel=document.getElementById('letter-ai-select');if(sel&&sel.value!==_lwFidD)sel.value=_lwFidD;
+  _lwPendD={friendId:_lwFidD,content:v,uid:'letteru_'+Date.now()};
+  document.getElementById('lw-ov').hidden=true;
+  requestLetterFromSelected();
+}
+(function(){try{
+  var bk=document.querySelector('#lw-ov .lw-bk');if(bk)bk.addEventListener('click',function(){var n=document.querySelector('.lw-note');_lwSaveDraftD(true);if(n){n.classList.remove('shake');void n.offsetWidth;n.classList.add('shake')}toast('内容已自动存草稿；要离开请点「存草稿并退出」')});
+  var bd=document.getElementById('lw-body'),tI=null;if(bd)bd.addEventListener('input',function(){clearTimeout(tI);tI=setTimeout(function(){_lwSaveDraftD(true)},700)});
+  document.addEventListener('visibilitychange',function(){try{var ov=document.getElementById('lw-ov');if(document.hidden&&ov&&!ov.hidden)_lwSaveDraftD(true)}catch(e){}});
+}catch(e){}})();
+async function deleteLetter(id){if(await ibConfirmX('确定删除？')){try{var lDel=await dbGet('letters',id);if(lDel&&lDel.replyTo)await dbDelete('letters',lDel.replyTo)}catch(e){}await dbDelete('letters',id);loadLetters();toast('已删除')}}
 
 async function exportLetters(){
   const letters=await dbGetAll('letters');
@@ -13390,7 +13487,7 @@ async function sendChatMessage(voiceMsg){
           if(cfg.provider==='deepseek'){
             sysContent='【重要格式要求】你必须在每次回复时，先输出 <thinking> 标签包裹的思考过程，再输出正文回复。格式如下：\n<thinking>\n你的思考过程（对方不可见）\n</thinking>\n\n你的正式回复\n\n不可省略 <thinking> 标签，这是强制格式要求。\n\n'+sysContent;
           }else{
-            sysContent='[回复格式] 每次回复请先输出一段 <thinking> 标签包裹的思路笔记，再输出正式回复。这段笔记是你主动书写的回复草稿（过程摘要），属于你正常输出的一部分，并非要求你披露平台内部的隐藏推理——推理型模型也请照常书写。界面会将其折叠展示，对方默认不会展开。\n<thinking>\n（写下你对这条消息的理解与回应思路。思考中自然运用记忆即可，不要逐条罗列或原文复述记忆档案。）\n</thinking>\n\n正式回复\n\n'+sysContent;
+            sysContent='[回复格式] 每次回复请先输出 <thinking> 标签包裹的内容，再输出正式回复。<thinking> 里写你此刻真实的内心活动——第一反应、情绪、没说出口的私心、自己跟自己的嘀咕。第一人称自言自语，短句碎句都行，可以只有一句；不是回复草稿或要点分析，别写「用户如何、我应如何回应」。记忆自然浮现即可，不要罗列。正文是说出口的话，思考是没说出口的，两者不必一致。此内容属于你主动书写的正常输出，并非要求你披露平台内部的隐藏推理——推理型模型也请照常书写；界面会将其折叠，对方默认不展开。\n<thinking>\n（此刻脑子里真实闪过的东西）\n</thinking>\n\n正式回复\n\n'+sysContent;
           }
         }
         if(cfg.imageGen)sysContent+=_IMGGEN_INSTR_BLOCK;
@@ -13701,7 +13798,7 @@ async function sendChatMessage(voiceMsg){
       if(cfg.provider==='deepseek'){
         sysContent='【重要格式要求】你必须在每次回复时，先输出 <thinking> 标签包裹的思考过程，再输出正文回复。格式如下：\n<thinking>\n你的思考过程（对方不可见）\n</thinking>\n\n你的正式回复\n\n不可省略 <thinking> 标签，这是强制格式要求。\n\n'+sysContent;
       }else{
-        sysContent='[回复格式] 每次回复请先输出一段 <thinking> 标签包裹的思路笔记，再输出正式回复。这段笔记是你主动书写的回复草稿（过程摘要），属于你正常输出的一部分，并非要求你披露平台内部的隐藏推理——推理型模型也请照常书写。界面会将其折叠展示，对方默认不会展开。\n<thinking>\n（写下你对这条消息的理解与回应思路。思考中自然运用记忆即可，不要逐条罗列或原文复述记忆档案。）\n</thinking>\n\n正式回复\n\n'+sysContent;
+        sysContent='[回复格式] 每次回复请先输出 <thinking> 标签包裹的内容，再输出正式回复。<thinking> 里写你此刻真实的内心活动——第一反应、情绪、没说出口的私心、自己跟自己的嘀咕。第一人称自言自语，短句碎句都行，可以只有一句；不是回复草稿或要点分析，别写「用户如何、我应如何回应」。记忆自然浮现即可，不要罗列。正文是说出口的话，思考是没说出口的，两者不必一致。此内容属于你主动书写的正常输出，并非要求你披露平台内部的隐藏推理——推理型模型也请照常书写；界面会将其折叠，对方默认不展开。\n<thinking>\n（此刻脑子里真实闪过的东西）\n</thinking>\n\n正式回复\n\n'+sysContent;
       }
     }
     if(cfg.imageGen)sysContent+=_IMGGEN_INSTR_BLOCK;
@@ -14559,7 +14656,7 @@ async function _callApiChatStreamOnce(cfg,messages,opts){
     _msgs=messages.map(m=>({...m}));
     const _tkNote=cfg.provider==='deepseek'
       ?'\n\n[系统格式要求] 本次回复必须先输出 <thinking> 标签包裹的思考过程，再输出正文回复。不可省略，这是强制格式要求。'
-      :'\n\n[系统格式要求] 本次回复请先输出 <thinking> 标签包裹的思路笔记（你主动书写的公开回复草稿/过程摘要，并非平台内部的隐藏推理），再输出正文。请勿省略该标签。';
+      :'\n\n[系统格式要求] 本次回复请先输出 <thinking> 标签包裹的内心活动（你此刻真实的念头，第一人称自言自语；属于你主动书写的正常输出，并非平台内部的隐藏推理），再输出正文。请勿省略该标签。';
     const _npD=(s,n)=>{s=String(s||'');const k=s.lastIndexOf('【用户当前消息】');return k>=0?(s.slice(0,k)+n.replace(/^\n+/,'')+'\n\n'+s.slice(k)):(n.replace(/^\n+/,'')+'\n\n'+s)};
     for(let i=_msgs.length-1;i>=0;i--){if(_msgs[i].role==='user'){const _c0=_msgs[i].content;if(Array.isArray(_c0)){const _cc=_c0.map(p=>Object.assign({},p));const _tp=_cc.find(p=>p.type==='text');if(_tp)_tp.text=_npD(_tp.text,_tkNote);else _cc.unshift({type:'text',text:_tkNote.replace(/^\n+/,'')});_msgs[i]={..._msgs[i],content:_cc}}else{_msgs[i]={..._msgs[i],content:_npD(_c0,_tkNote)}}break}}/* 修复：末条 user 为图片/音频 parts 数组时不再被 String() 摧毁 */
   }
@@ -14799,7 +14896,7 @@ async function _callApiChatOnce(cfg,messages,opts){
       _msgs=messages.map(m=>({...m}));
       const _tkNote2=cfg.provider==='deepseek'
         ?'\n\n[系统格式要求] 本次回复必须先输出 <thinking> 标签包裹的思考过程，再输出正文回复。不可省略，这是强制格式要求。'
-        :'\n\n[系统格式要求] 本次回复请先输出 <thinking> 标签包裹的思路笔记（你主动书写的公开回复草稿/过程摘要，并非平台内部的隐藏推理），再输出正文。请勿省略该标签。';
+        :'\n\n[系统格式要求] 本次回复请先输出 <thinking> 标签包裹的内心活动（你此刻真实的念头，第一人称自言自语；属于你主动书写的正常输出，并非平台内部的隐藏推理），再输出正文。请勿省略该标签。';
       const _npD=(s,n)=>{s=String(s||'');const k=s.lastIndexOf('【用户当前消息】');return k>=0?(s.slice(0,k)+n.replace(/^\n+/,'')+'\n\n'+s.slice(k)):(n.replace(/^\n+/,'')+'\n\n'+s)};
       for(let i=_msgs.length-1;i>=0;i--){if(_msgs[i].role==='user'){const _c0=_msgs[i].content;if(Array.isArray(_c0)){const _cc=_c0.map(p=>Object.assign({},p));const _tp=_cc.find(p=>p.type==='text');if(_tp)_tp.text=_npD(_tp.text,_tkNote2);else _cc.unshift({type:'text',text:_tkNote2.replace(/^\n+/,'')});_msgs[i]={..._msgs[i],content:_cc}}else{_msgs[i]={..._msgs[i],content:_npD(_c0,_tkNote2)}}break}}/* 修复：末条 user 为图片/音频 parts 数组时不再被 String() 摧毁 */
     }
@@ -15540,6 +15637,14 @@ async function clearChatImages(){
   for(const m of all){if(m.images&&m.images.length){delete m.images;await dbPut('chatMessages',m);count++}}
   toast('已清除 '+count+' 条消息中的图片');updateChatStorageInfo();updateDangerStorageInfo();
 }
+async function clearCallAudio(){
+  const all=await dbGetAll('chatMessages');let count=0,clips=0,sz=0;
+  for(const m of all){if(m&&m.callAudio&&m.callAudio.length){count++;clips+=m.callAudio.length;try{sz+=JSON.stringify(m.callAudio).length}catch(e){}}}
+  if(!count){toast('没有留档的通话语音条');return}
+  if(!await ibConfirmX('⚠ 确定要清除 '+count+' 条消息上的 '+clips+' 枚通话语音条（约 '+_fmtB(sz)+'）？\n\n文字消息与通话记录会保留，仅删除留档的语音数据（手机端下次导入本备份后语音条随之消失）。'))return;
+  for(const m of all){if(m&&m.callAudio){delete m.callAudio;try{await dbPut('chatMessages',m)}catch(e){}}}
+  toast('已清除 '+count+' 条消息上的语音条');updateChatStorageInfo();updateDangerStorageInfo();
+}
 async function clearAllMemories(){
   if(!await ibConfirmX('⚠ 确定要清空整个记忆库？\n\n所有记忆将被永久删除。'))return;
   const all=await dbGetAll('memories');for(const m of all){await dbDelete('memories',m.id)}
@@ -15862,7 +15967,7 @@ function ibfVisibleToD(p,fid){
   return false;
 }
 async function ibfInsertPostD(who,text,vis,imgPrompt,cfgForImg){
-  var t=String(text||'').trim().slice(0,(who&&who.type==='user')?1000:800);
+  var t=String(text||'').trim().slice(0,1000);
   if(!t)return null;
   var p={id:'fd_'+Date.now()+'_'+Math.floor(Math.random()*10000),author:who,text:t,vis:(vis==='user'?'user':'all'),ts:Date.now(),comments:[]};
   try{await dbPut('feed',p)}catch(e){return null}
@@ -16479,7 +16584,7 @@ function _bpBindFrdEdit(c,inf,per){
 var _ibAdvPending=[];
 function _ibAdvDrain(filterFn){if(!_ibAdvPending.length)return'';var t,keep=[];if(typeof filterFn==='function'){t=[];_ibAdvPending.forEach(function(it){(filterFn(it)?t:keep).push(it)})}else{t=_ibAdvPending}_ibAdvPending=keep;if(!t.length)return'';_ibDrainMark(function(){_ibAdvPending=t.concat(_ibAdvPending)});return '【进阶指令执行结果】\n'+t.map(function(x){return (x&&x.text!=null)?x.text:x}).join('\n')}/* fix②③：结果带归属可过滤＋失败可回灌；兼容旧的纯字符串条目 */
 function _advAttr(a,k){var m=new RegExp(k+'\\s*=\\s*"([^"]*)"','i').exec(String(a||''));return m?m[1].trim():''}
-const _MEMWRITE_INSTR_BLOCK='\n\n【记忆库写入】把值得记住的事写进记忆库：\n<ws_mem_write title="标题" summary="概述" domain="领域">记忆内容</ws_mem_write>\n- 写我们之间发生的事——经历、对话里的时刻、共同的记忆，用你自己的第一人称口吻写；不是对我的分析或画像，长期背景、偏好与指令属于记忆档案，不写在这里。\n- title、summary、domain、tags 每条都写：title 这条记忆的名字（20 字内，像日记标题）；summary 概述（用你自己的口吻，一两句话说清这是件什么事、对你意味着什么，50 字内——记忆列表里只显示标题和这一句，正文要点开才看到，所以它得能脱离正文单独成立）；domain 从 情感/日常/创作/思考 中四选一；tags 2～5 枚关键词（逗号分隔）。\n- 可选参数，拿不准就省略：importance="1-10" 重要程度（默认 5）、valence="0-1" 情绪效价（0 负面～1 正面）、arousal="0-1" 情绪强度（0 平静～1 强烈）。\n- 每条正文不超过 600 字（超出会被截断）；每条回复最多写 3 次。\n- 写下的条目只有你自己能看到；用户可以在 Memory 页查看、编辑或删除。\n- 只记你认为值得回忆的事情，琐碎事件无需重复写入。';
+const _MEMWRITE_INSTR_BLOCK='\n\n【记忆库写入】把值得记住的事写进记忆库：\n<ws_mem_write title="标题" summary="概述" domain="领域">记忆内容</ws_mem_write>\n- 写我们之间发生的事——经历、对话里的时刻、共同的记忆，用你自己的第一人称口吻写；不是对我的分析或画像，长期背景、偏好与指令属于记忆档案，不写在这里。\n- title、summary、domain、tags 每条都写：title 这条记忆的名字（20 字内，像日记标题）；summary 概述（严格按「一两句话，这段内容意味着什么，50 字以内」写：用你自己的口吻说清这是件什么事、对你意味着什么；不复述标题、不摘抄正文首句——记忆列表里只显示标题和这一句，正文要点开才看到，它得能脱离正文单独成立）；domain 从 情感/日常/创作/思考 中四选一；tags 2～5 枚关键词（逗号分隔）。\n- 可选参数，拿不准就省略：importance="1-10" 重要程度（默认 5）、valence="0-1" 情绪效价（0 负面～1 正面）、arousal="0-1" 情绪强度（0 平静～1 强烈）。\n- 每条正文不超过 600 字（超出会被截断）；每条回复最多写 3 次。\n- 写下的条目只有你自己能看到；用户可以在 Memory 页查看、编辑或删除。\n- 只记你认为值得回忆的事情，琐碎事件无需重复写入。';
 
 async function _ibMemWriteExec(cfg,op,n){
   if(!(cfg&&cfg.memWrite))return{type:'mem_write',ok:false,reason:'用户未开启「记忆库写入」，请不要再输出该标签'};
@@ -16488,7 +16593,7 @@ async function _ibMemWriteExec(cfg,op,n){
   if(!t)return{type:'mem_write',ok:false,reason:(op&&op.truncated)?'输出被截断，记忆内容不完整':'记忆内容为空'};
   var txt=t.slice(0,600),flat=txt.replace(/\s+/g,' ');
   var _tA9=String(_wsAttr(op.attrs||'','title')||'').replace(/\s+/g,' ').trim().slice(0,40);var title=_tA9||(flat.slice(0,18)+(flat.length>18?'…':''));
-  var sm9=String(_wsAttr(op.attrs||'','summary')||'').replace(/\s+/g,' ').trim().slice(0,80);if(!sm9)sm9=(txt.replace(/\s+/g,' ').match(/^[^。！？!?\n]*[。！？!?]?/)||[''])[0].trim().slice(0,50);/* 本轮：summary 概述参数，缺省留空（老输出零影响） */
+  var sm9=String(_wsAttr(op.attrs||'','summary')||'').replace(/\s+/g,' ').trim().slice(0,100);if(!sm9)sm9=(txt.replace(/\s+/g,' ').match(/^[^。！？!?\n]*[。！？!?]?/)||[''])[0].trim().slice(0,50);/* 本轮：summary 概述参数，缺省留空（老输出零影响） */
   var imp9=parseInt(_wsAttr(op.attrs||'','importance'));if(!isFinite(imp9))imp9=5;imp9=Math.max(1,Math.min(10,imp9));
   var val9=parseFloat(_wsAttr(op.attrs||'','valence'));if(!isFinite(val9))val9=0.5;val9=Math.max(0,Math.min(1,val9));
   var aro9=parseFloat(_wsAttr(op.attrs||'','arousal'));if(!isFinite(aro9))aro9=0.3;aro9=Math.max(0,Math.min(1,aro9));
@@ -16532,7 +16637,7 @@ async function _ibBeyondInstrD(cfg){
   var perSig=null;try{perSig=await _ibSigGetD(cfg.id)}catch(e){}
   var seg='\n\n【InternetBeyond · 社交圈】一个专属于你的应用内社交平台。你可以参与社交圈内的动态流，动态可能来自用户、你自己、也可能来自其他 AI 好友。只有当前话题与社交圈相关，或确实需要查看、回应、发布时再使用，不要为了保持活跃而打断当前话题。';
   seg+='\n查看：<ws_beyond_view n="10"/>（主动翻看最近 n 条，1–20'+(pb.view==='auto'?'；用户已设自动同意，结果会在之后的消息回传给你':'；需要用户点击确认后执行，结果会在之后的消息回传给你——请等待，不要重复提交')+'）';
-  if(canPost)seg+='\n发布：<ws_post>动态正文</ws_post>（可选属性：vis="user" 仅用户可见'+(imgOk?'；img="画面描述" 附生成配图':'')+'。正文 ≤800 字符，每条回复最多 1 条）';/* v84：限长归位（任务 2 审核） */
+  if(canPost)seg+='\n发布：<ws_post>动态正文</ws_post>（可选属性：vis="user" 仅用户可见'+(imgOk?'；img="画面描述" 附生成配图':'')+'。正文 ≤1000 字符，每条回复最多 1 条）';/* v84：限长归位（任务 2 审核） */
   if(canCmt)seg+='\n评论：<ws_comment id="动态编号">评论内容</ws_comment>（编号取自查看结果的 #编号。每条回复最多 2 条；回复某人的评论加 re="对方名字"；每条动态评论总数上限 20 条）';
   if(canPost)seg+='\n转发：<ws_repost id="动态编号">可选感想（可留空直接转发）</ws_repost>';
   seg+='\n想知道最近谁评论/回复/转发了你：输出 <ws_beyond_inbox/>（无需确认，结果会回传给你）';/* v83 r4：任务 10＋补充限长 */
