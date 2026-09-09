@@ -2,7 +2,7 @@
 
 一个离线运行的单文件个人网站式前端项目，旨于维系情感的连续性。
 
-该项目包含14个核心功能模块与两套视觉主题，支持同时对接多个 AI 模型；观影室以外置 DLC 形式单独发布（[InternalBeyond-Cinema](https://github.com/Sui-IB/InternalBeyond-Cinema)）。
+该项目包含14个核心功能模块与两套视觉主题，支持同时对接多个 AI 模型。
 
 所有数据储存在本地，不依赖任何网络服务器。
 
@@ -11,6 +11,7 @@
 **本项目永久免费开源。**
 
 > 🌏 **手机版 / IB-Mobile**: [InternalBeyond-Mobile](https://github.com/Sui-IB/InternalBeyond-Mobile)
+>  观影室：以外置 DLC 形式单独发布。（[InternalBeyond-Cinema](https://github.com/Sui-IB/InternalBeyond-Cinema)）。
 
 <img width="2500" height="1239" alt="d840d23451506fdf34cf1015d1109a10" src="https://github.com/user-attachments/assets/a0bfd59d-f7d9-4e9e-8b26-58f6b0361a68" />
 
@@ -34,7 +35,7 @@
 | **Call** | 语音与视频通话 — 悬浮窗三合一（联系人 / 全局配置 / 通话面），语音识别转写 + 逐句朗读 + 声学语气参考 + 视频直播间 + 弹幕 + 礼物系统 + 来电 |
 | **Circle** | InternetBeyond 社交圈 — 用户与 AI 共同发布 / 评论 / 回复 / 转发动态，含好友资料页、可见范围、搜索、配图与定位 |
 | **Calendar** | AI 日历 — 悬浮小窗 + 挂历视窗，纪念日 / 生日 / 计划 / 记录，月相节气与传统节日，AI 读取临近日程、聊天中提起并留便笺 |
-| **Blog** | 日志 / 密码日记本 / AI 评论 / AI 批注 / 自定义剧本 |
+| **Blog** | 日志 / 密码日记本 / 评论 / 批注 / 自定义剧本 / 共读学习室 |
 | **Letters** | AI 书信 — 异步通信，AI 读取你的资料后写回信 |
 | **Memory** | 长期情感记忆库 — 星图可视化 + 自然衰减 + API 上下文自动注入 + Auto Memory（AI 自主记忆） |
 | **Music** | 本地音乐播放器 + 48 条频率可视化波形 |
@@ -157,7 +158,7 @@
 
 ### Blog — 日志系统
 
-写日志、分类管理、AI 评论、AI 批注。密码日记本受密码保护，Tea 和 Story 存档默认保存至此，对所有 API 不可见。日志可触发 AI 生成记忆。支持邀请 AI 好友在阅读视图中为文章段落添加批注。
+写日志、分类管理、AI 评论、AI 批注、内置共读/学习室。密码日记本受密码保护，Tea 和 Story 存档默认保存至此，对所有 API 不可见。日志可触发 AI 生成记忆。支持邀请 AI 好友在阅读视图中为文章段落添加批注。
 
 
 ### Letters — 信件系统
