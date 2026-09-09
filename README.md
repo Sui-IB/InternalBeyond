@@ -12,7 +12,7 @@
 
 > 🌏 **手机版 / IB-Mobile**: [InternalBeyond-Mobile](https://github.com/Sui-IB/InternalBeyond-Mobile)
 > 
->  **观影室** ：以外置 DLC 形式在V2.6.8版本单独发布。（[InternalBeyond-Cinema](https://github.com/Sui-IB/InternalBeyond-Cinema)）。
+>  **观影室** ：以外置 DLC 形式在V2.7.0版本单独发布。（[InternalBeyond-Cinema](https://github.com/Sui-IB/InternalBeyond-Cinema)）。
 
 <img width="2500" height="1239" alt="d840d23451506fdf34cf1015d1109a10" src="https://github.com/user-attachments/assets/a0bfd59d-f7d9-4e9e-8b26-58f6b0361a68" />
 
