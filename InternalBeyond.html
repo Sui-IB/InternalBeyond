@@ -7280,9 +7280,9 @@ i would like the room to be enough.
           <p><strong>新建</strong>：左侧填写类型、标题、日期、重复方式、可见范围与备注；「计划」和「记录」可额外填写结束日期，重复方式增加「每天」。结束日期与相遇纪念日使用同一套日期识别，支持 2026-10-31、2026/10/31、2026年10月31日 等写法；早于开始日期时不会保存。右侧设置提醒开关与提前天数，默认 7 天，每条日程各自设置。纪念日与生日默认按年重复，计划与记录默认单次；记录默认仅自己可见，且关闭 AI 提醒。备注选填，填写后会随日程一并提供给有读取权限的 AI，留空则不发送。</p>
           <p><strong>日程</strong>：首页显示你与本站的相遇纪念日，列出全部日程。左右翻页可查看每位 AI 与你的相遇纪念日，以及对该 AI 可见的日程。行卡显示日期或日期范围、重复方式与提醒设置，悬停可删除。</p>
           <p><strong>留言</strong>：AI 写的便笺按时间倒序排列，可按成员筛选。每张便笺标注署名与关联的事项标题，悬停可删除。关闭日历总开关只会停止 AI 继续读取与写入，历史便笺仍可查看。</p>
-          <p><strong>设置</strong>：左侧控制日历的显示偏好、总开关与节日提醒；右侧设定你与本站的相遇纪念日，以及每位 AI 的读取与留言权限及纪念日。总开关关闭后，AI 不再读取日程，也不写新便笺。留言依赖读取权限：关闭读取会同时关闭留言，开启留言会同时开启读取。节日提醒默认关闭，开启后部分节日临近时会在聊天中被提起；有留言权限的 AI 也可留下便笺。相遇纪念日默认按首条聊天记录推算，填入日期可手动覆盖，清空即恢复。</p>
+          <p><strong>设置</strong>：左侧控制日历的显示偏好、总开关与节日提醒；右侧设定你与本站的相遇纪念日，以及每位 AI 的读取与留言权限及纪念日。总开关关闭后，AI 不再读取日程，也不写新便笺。读取、留言、相遇提醒三个开关各管各的。节日提醒默认开启，开启后所有 AI 都会在节日临近时收到提醒，有留言权限的还能留下便笺。相遇纪念日默认按首条聊天记录推算，填入日期可手动覆盖，清空即恢复。</p>
           <p><strong>数据与缓存</strong>：临近日程、日期范围与备注附在消息末尾，按天生成，不影响固定提示缓存。同一事项每位 AI 至多写一张便笺，提及标记 3 轮后自动收口。改动读写权限或总开关时，相关好友的下一条消息会重建一次缓存，之后恢复。节日开关不触发重建。所有数据存在浏览器本地，包含在导出与备份中。群聊不接入日历。</p>
-          <p><strong>关于提醒</strong>：提醒只发生在你主动发消息的那一次回复里——有读取权限的 AI 会在消息末尾看到临近事项，可能自然提起或写下便笺。日历不会主动弹窗、推送，也不会在你未打开网站时发出任何提醒。相遇纪念日单独走权限矩阵的第三枚「相遇提醒」（依赖读取，读取关则一并关）：只给开了它的 AI 生成，当天与前后一天提起，档位 100 天 / 520 天 / 每一周年。</p>
+          <p><strong>关于提醒</strong>：提醒只发生在你主动发消息的那一次回复里——有读取权限的 AI 会在消息末尾看到临近事项，可能自然提起或写下便笺。日历不会主动弹窗、推送，也不会在你未打开网站时发出任何提醒。相遇纪念日单独走权限矩阵的第三枚「相遇提醒」（和读取分开设置）：只给开了它的 AI 生成，当天与前后一天提起，档位 100 天 / 520 天 / 每一周年。</p>
         </div>
       </div>
 
@@ -8198,7 +8198,7 @@ i would like the room to be enough.
           <div class="set-block" id="sb-holiday">
             <div class="sb-t"><svg aria-hidden="true"><use href="#sym-bell"/></svg>Festivals — 节日</div>
             <div class="tog-line">
-              <span><span class="tl-t">传统节日提醒</span><span class="tl-s">默认开启。开启时部分节日临近时并入日历栏，有读取权限的 AI 可在聊天中提起；有留言权限时也可留下便笺。</span></span>
+              <span><span class="tl-t">传统节日提醒</span><span class="tl-s">默认开启。节日临近时并入日历栏，所有 AI 都会收到提醒，开了留言的还能为节日留便笺。</span></span>
               <label class="ib-switch"><input type="checkbox" id="set-holiday"><span class="kn"></span></label>
             </div>
           </div>
@@ -12288,6 +12288,7 @@ async function _annoEnrichPostCards(){
 }
 
 /* API CALL HELPER */
+function _apdOnD(cfg){try{if(!cfg||cfg.promptCache===false)return false;var f=null;try{f=localStorage.getItem('ib_sentHist')}catch(e){}if(f==='0')return false;if(_cfgFmt(cfg)!=='openai')return false;if(f==='1')return true;var ep=String(cfg.endpoint||'');if(_dsThinkOffD(cfg))return true;if(cfg.provider==='openai')return true;return /(^|\/\/|\.)api\.openai\.com(\/|:|$)/i.test(ep)}catch(e){return false}}
 function _dsThinkOffD(cfg){try{if(cfg&&cfg.provider==='deepseek')return true;if(/deepseek\.com/i.test(String((cfg&&cfg.endpoint)||'')))return true;var m9=String((cfg&&cfg.model)||'').toLowerCase();m9=m9.slice(m9.lastIndexOf('/')+1);return /^deepseek[-_.]/.test(m9)}catch(e){return false}}
 async function callApi(cfg,userMsg,opts){const _co=opts||{},_cmt=Math.max(256,parseInt(_co.maxTokens,10)||4096);
   const format=_cfgFmt(cfg);/* v25-sync：#1 自定义服务商按地址自动识别格式；内置服务商结果与旧写法逐字相同 */
@@ -12937,11 +12938,21 @@ function renderAttachPreviews(){
     });
     _pendingFiles.forEach((f,i)=>{
       const item=document.createElement('div');item.className='chat-preview-item';
-      item.innerHTML='<div class="chat-preview-file"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span>'+esc(f.name)+'</span></div><div class="chat-preview-x" onclick="removeFilePreview('+i+')">✕</div>';
+      item.innerHTML='<div class="chat-preview-file" style="cursor:pointer" title="看、改" onclick="_pendFileEditD('+i+')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span>'+esc(f.name)+'</span>'+(f.pasted?'<span title="放回输入框" style="margin-left:6px;opacity:.8;cursor:pointer" onclick="event.stopPropagation();_pendFilePutD('+i+')">✎</span>':'')+'</div><div class="chat-preview-x" onclick="removeFilePreview('+i+')">✕</div>';/* v193：发送前点标签看、改；粘贴的 ✎ 放回输入框 */
       bar.appendChild(item)
     })
   })
 }
+
+
+function _pendFileInputD(){var f=document.getElementById('chat-full-input');if(f&&f.offsetParent!==null)return f;return document.querySelector('.chat-input')||f}
+function _pendFilePutD(i){try{var f=_pendingFiles[i];if(!f)return;var t=String(f.text||'');_pendingFiles.splice(i,1);var inp=_pendFileInputD();if(inp){inp.value=(inp.value?inp.value+'\n':'')+t;try{inp.dispatchEvent(new Event('input',{bubbles:true}))}catch(e){}inp.focus()}renderAttachPreviews()}catch(e){}}
+function _pendFileEditD(i){try{var f=_pendingFiles[i];if(!f)return;var old=document.getElementById('ib-pfe');if(old)old.remove();var ov=document.createElement('div');ov.id='ib-pfe';ov.style.cssText='position:fixed;inset:0;z-index:9000;background:rgba(10,18,32,.45);display:flex;align-items:center;justify-content:center';
+  ov.innerHTML='<div style="width:min(760px,92vw);max-height:84vh;display:flex;flex-direction:column;gap:10px;background:var(--panel,#fff);color:var(--tx,#1b2a44);border:1px solid var(--glass-line,#e3e9f2);border-radius:16px;padding:16px 18px;box-shadow:0 18px 48px rgba(0,0,0,.28)"><div style="display:flex;align-items:center;gap:10px"><b id="ib-pfe-n" style="flex:1;font-weight:600"></b><button class="btn" id="ib-pfe-x">关闭</button></div><textarea id="ib-pfe-ta" style="flex:1;min-height:40vh;max-height:62vh;resize:none;white-space:pre-wrap;word-break:break-all;font-size:.86rem;line-height:1.7;color:inherit;background:var(--soft,#f6f8fb);border:1px solid var(--line,#e3e9f2);border-radius:12px;padding:12px;box-sizing:border-box;font-family:inherit;outline:none"></textarea><div style="display:flex;gap:10px;justify-content:flex-end"><button class="btn" id="ib-pfe-put">放回输入框</button><button class="btn" id="ib-pfe-sv">保存修改</button></div></div>';
+  document.body.appendChild(ov);var ta=ov.querySelector('#ib-pfe-ta');ov.querySelector('#ib-pfe-n').textContent=f.name||'附件';ta.value=String(f.text||'');
+  ov.querySelector('#ib-pfe-x').onclick=function(){ov.remove()};ov.addEventListener('click',function(e){if(e.target===ov)ov.remove()});
+  ov.querySelector('#ib-pfe-put').onclick=function(){f.text=ta.value;ov.remove();_pendFilePutD(i)};
+  ov.querySelector('#ib-pfe-sv').onclick=function(){var t=ta.value;f.text=t;f.size=t.length;if(f.pasted)f.name='粘贴的长文本（'+t.length+' 字）';ov.remove();renderAttachPreviews();try{toast('改好了')}catch(e){}}}catch(e){}}
 function removeImagePreview(idx){_pendingImages.splice(idx,1);renderAttachPreviews()}
 function removeFilePreview(idx){_pendingFiles.splice(idx,1);renderAttachPreviews()}
 function _fmtFileSize(bytes){if(bytes<1024)return bytes+' B';if(bytes<1048576)return(bytes/1024).toFixed(1)+' KB';if(bytes<1073741824)return(bytes/1048576).toFixed(1)+' MB';return(bytes/1073741824).toFixed(1)+' GB'}
@@ -13642,6 +13653,7 @@ function _viewImageFull(src){
 /* paste & drag-drop image support */
 document.addEventListener('paste',function(e){
   if(!document.querySelector('.chat-input:focus')&&!document.querySelector('#chat-full-input:focus'))return;
+  try{var _cdT=e.clipboardData&&e.clipboardData.getData?e.clipboardData.getData('text/plain'):'';if(_cdT&&!Array.prototype.some.call((e.clipboardData&&e.clipboardData.items)||[],function(it){return it&&it.type&&it.type.indexOf('image/')===0})){var _pn=_cdT.length,_pl=(_cdT.match(/\n/g)||[]).length+1;if(_pn>=600||_pl>=12){if(_pendingFiles.length>=FILE_MAX_COUNT){toast('最多附加 '+FILE_MAX_COUNT+' 个文件');return}e.preventDefault();_pendingFiles.push({name:'粘贴的长文本（'+_pn+' 字）',text:_cdT,size:_pn,ext:'txt',pasted:1});renderAttachPreviews();toast('长文本已收成附件，随这条消息一起发');return}}}catch(err){}/* v192：粘贴长文本收成附件（≥600 字或 ≥12 行；同手机端） */
   const items=e.clipboardData&&e.clipboardData.items;if(!items)return;
   for(const item of items){
     if(item.type.startsWith('image/')){
@@ -14601,7 +14613,7 @@ async function sendChatMessage(voiceMsg){
         if(_gMemR.length)aiMsg.memOps=_amOpsKeepD(_gMemR);
         if(_gCallRes.truncated)aiMsg.truncated=true;/* 任务6 */
         await _musicMaybeDecorateMsgD(aiMsg);
-        try{_ibMemHitD(aiMsg)}catch(e){}await dbPut('chatMessages',aiMsg);try{_ibMemCommitD()}catch(e){};try{_ibSrcStampD(aiMsg)}catch(e){};try{if(typeof _mlkD!=='undefined'&&_mlkD&&!String(_targetFriend).startsWith('group_'))_ibMemContGoD(_targetFriend,_targetThread)}catch(e){};try{if(window._ibGbLiveD)_ibGbLiveD(aiMsg)}catch(e){};try{if(typeof _targetFriend!=='undefined'&&window.IBCALLW)IBCALLW.onAiMsg(_targetFriend,aiMsg)}catch(e){}
+        try{_ibMemHitD(aiMsg)}catch(e){}await dbPut('chatMessages',aiMsg);try{var _spD=window._ibSentPendD;if(_spD&&_spD.id&&_spD.cfgId===String(cfg.id||'')){window._ibSentPendD=null;var _umD=await dbGet('chatMessages',_spD.id);if(_umD&&_umD.role==='user'){_umD.sent=_spD.content;await dbPut('chatMessages',_umD)}}}catch(e){}try{_ibMemCommitD()}catch(e){};try{_ibSrcStampD(aiMsg)}catch(e){};try{if(typeof _mlkD!=='undefined'&&_mlkD&&!String(_targetFriend).startsWith('group_'))_ibMemContGoD(_targetFriend,_targetThread)}catch(e){};try{if(window._ibGbLiveD)_ibGbLiveD(aiMsg)}catch(e){};try{if(typeof _targetFriend!=='undefined'&&window.IBCALLW)IBCALLW.onAiMsg(_targetFriend,aiMsg)}catch(e){}
         roundExtras.push(aiMsg);
         if(_gStreamOk){
           
@@ -14730,7 +14742,7 @@ async function sendChatMessage(voiceMsg){
       if(m.voice)mc+=(mc?'\n':'')+_voiceApiLine(m.voice,!_vNative);
       if(m.role==='user'&&m.callTone&&(mc.indexOf('[语音通话] ')===0||mc.indexOf('[视频通话] ')===0)){var _tnC=_vmToneNatural(m.callTone);var _pf9=mc.slice(0,5);if(_tnC)mc=_pf9+'｜声学语气参考: '+_tnC+'] '+mc.slice(7)}
       if(m.files&&m.files.length)m.files.forEach(function(f){mc+='\n\n[文件上传: '+f.name+']\n'+_capFileText(f.text)});mc+=_ibLkLineD(m);/* v157：与手机端同一行，接在附件后面 */
-      var _mm={role:m.role==='assistant'?'assistant':'user',content:m.role==='assistant'?_wsStubHistory(mc,m.wsResults):mc};
+      var _mm={role:m.role==='assistant'?'assistant':'user',content:m.role==='assistant'?_wsStubHistory(mc,m.wsResults):mc,id:m.id,sent:(typeof m.sent==='string')?m.sent:undefined};
       if(m.role!=='user'&&_mm.role==='user')_mm._groupSender=true;
       return _mm;
     });
@@ -14792,8 +14804,9 @@ async function sendChatMessage(voiceMsg){
     try{if(!_vNative&&Array.isArray(history)&&history.some(function(m9){return m9&&m9.role==='user'&&m9.voice}))sysContent+=_VOICEMSG_TONE_NOTE}catch(e){}
     try{if(window.IBCALLW&&IBCALLW.sysExtra){var _ibcX=await IBCALLW.sysExtra(cfg);if(_ibcX)sysContent+=_ibcX}}catch(e){}
     if(sysContent)sysContent+=_SYS_SPLIT+((_amInj&&_amInj.stable)?'\n\n'+_amInj.stable:'')+((_coldD&&_coldD.text)?'\n\n'+_coldD.text:'')+_IB_PERSONA_LOCK;else if(_coldD&&_coldD.text)_tailCtx+=(_tailCtx?'\n\n':'')+_coldD.text;/* v169：第二块 = 档案核心 + 一直记得的（置顶）+ 最后说明，与手机端同序；没有 system 时置顶仍随消息尾带 *//* v87 人格收束：System 末尾固定说明 *//* v115：分隔符之后＝第二块（档案核心 + 人格收束） */
+    try{if(_apdOnD(cfg)){var _tu9=(typeof _IB_TAIL_USER==='string')?_IB_TAIL_USER:'\n\n【用户当前消息】\n';for(var _i9=0;_i9<messages.length-1;_i9++){var _o9=messages[_i9];if(_o9&&_o9.role==='user'&&typeof _o9.sent==='string'&&typeof _o9.content==='string'&&_o9.sent.length>_o9.content.length&&_o9.sent.slice(-(_tu9.length+_o9.content.length))===_tu9+_o9.content)_o9.content=_o9.sent}}messages.forEach(function(o){if(o)delete o.sent})}catch(e){}
     if(sysContent)messages.unshift({role:'system',content:sysContent});
-    if(_tailCtx){for(let _ti=messages.length-1;_ti>=0;_ti--){if(messages[_ti].role==='user'){const _uO=(typeof messages[_ti].content==='string'?messages[_ti].content:String(messages[_ti].content||''));messages[_ti]={role:'user',content:_IB_TAIL_HEAD+_tailCtx.replace(/^\n+/,'')+_IB_TAIL_USER+_uO};break}}}/* v87 语义反序：参考资料在前、用户原话压轴；仅改末条发送副本，历史落库与缓存断点不变 */
+    if(_tailCtx){for(let _ti=messages.length-1;_ti>=0;_ti--){if(messages[_ti].role==='user'){const _uO=(typeof messages[_ti].content==='string'?messages[_ti].content:String(messages[_ti].content||''));messages[_ti]={role:'user',content:_IB_TAIL_HEAD+_tailCtx.replace(/^\n+/,'')+_IB_TAIL_USER+_uO,id:messages[_ti].id};break}}}/* v87 语义反序：参考资料在前、用户原话压轴；仅改末条发送副本，历史落库与缓存断点不变 *//* v191：包起来以后保留消息 id，callAI 里据此记下发出去的最终文本 */
     const _visionOk=_ibVisionOn(cfg);
     try{if(_ibToolDrainImages.length){const _ti=_ibToolDrainImages.splice(0);if(_visionOk)_ti.forEach(u=>{var _mI=/^data:([^;,]+);base64,(.+)$/.exec(String(u||''));if(_mI)sentImages.push({dataUrl:u,base64:_mI[2],mime:_mI[1],name:'tool_result.png'})})}}catch(e){}
     if(sentImages.length&&messages.length){
@@ -14988,7 +15001,7 @@ async function sendChatMessage(voiceMsg){
         
       }catch(e){}
       await _musicMaybeDecorateMsgD(aiMsg);
-        try{_ibMemHitD(aiMsg)}catch(e){}await dbPut('chatMessages',aiMsg);try{_ibMemCommitD()}catch(e){};try{_ibSrcStampD(aiMsg)}catch(e){};try{if(typeof _mlkD!=='undefined'&&_mlkD&&!String(_targetFriend).startsWith('group_'))_ibMemContGoD(_targetFriend,_targetThread)}catch(e){};try{if(window._ibGbLiveD)_ibGbLiveD(aiMsg)}catch(e){};try{if(typeof _targetFriend!=='undefined'&&window.IBCALLW)IBCALLW.onAiMsg(_targetFriend,aiMsg)}catch(e){}
+        try{_ibMemHitD(aiMsg)}catch(e){}await dbPut('chatMessages',aiMsg);try{var _spD=window._ibSentPendD;if(_spD&&_spD.id&&_spD.cfgId===String(cfg.id||'')){window._ibSentPendD=null;var _umD=await dbGet('chatMessages',_spD.id);if(_umD&&_umD.role==='user'){_umD.sent=_spD.content;await dbPut('chatMessages',_umD)}}}catch(e){}try{_ibMemCommitD()}catch(e){};try{_ibSrcStampD(aiMsg)}catch(e){};try{if(typeof _mlkD!=='undefined'&&_mlkD&&!String(_targetFriend).startsWith('group_'))_ibMemContGoD(_targetFriend,_targetThread)}catch(e){};try{if(window._ibGbLiveD)_ibGbLiveD(aiMsg)}catch(e){};try{if(typeof _targetFriend!=='undefined'&&window.IBCALLW)IBCALLW.onAiMsg(_targetFriend,aiMsg)}catch(e){}
       streamRefs.forEach(ref=>{
         if(aiMsg.id){ref.div.dataset.msgId=aiMsg.id;const db=document.createElement('button');db.className='chat-msg-del';db.textContent='✕';db.title='删除此消息';db.onclick=function(ev){ev.stopPropagation();deleteSingleMsg(aiMsg.id,ref.div)};ref.div.appendChild(db);
           if(typeof _chatSelectMode!=='undefined'&&_chatSelectMode&&ref.full&&!ref.div.querySelector('.chat-sel-circle')){const sc=document.createElement('div');sc.className='chat-sel-circle';sc.onclick=function(ev){ev.stopPropagation();_toggleMsgSel(aiMsg.id,sc)};ref.div.appendChild(sc)}/* BUGFIX: Select 模式中流式完成的消息补圈 */}
@@ -15037,7 +15050,7 @@ async function sendChatMessage(voiceMsg){
       if(_targetThread)aiMsg.threadId=_targetThread;
       if(_callResN.truncated)aiMsg.truncated=true;/* 任务6：自动续写轮数用尽仍截断 */
       await _musicMaybeDecorateMsgD(aiMsg);
-        try{_ibMemHitD(aiMsg)}catch(e){}await dbPut('chatMessages',aiMsg);try{_ibMemCommitD()}catch(e){};try{_ibSrcStampD(aiMsg)}catch(e){};try{if(typeof _mlkD!=='undefined'&&_mlkD&&!String(_targetFriend).startsWith('group_'))_ibMemContGoD(_targetFriend,_targetThread)}catch(e){};try{if(window._ibGbLiveD)_ibGbLiveD(aiMsg)}catch(e){};try{if(typeof _targetFriend!=='undefined'&&window.IBCALLW)IBCALLW.onAiMsg(_targetFriend,aiMsg)}catch(e){}
+        try{_ibMemHitD(aiMsg)}catch(e){}await dbPut('chatMessages',aiMsg);try{var _spD=window._ibSentPendD;if(_spD&&_spD.id&&_spD.cfgId===String(cfg.id||'')){window._ibSentPendD=null;var _umD=await dbGet('chatMessages',_spD.id);if(_umD&&_umD.role==='user'){_umD.sent=_spD.content;await dbPut('chatMessages',_umD)}}}catch(e){}try{_ibMemCommitD()}catch(e){};try{_ibSrcStampD(aiMsg)}catch(e){};try{if(typeof _mlkD!=='undefined'&&_mlkD&&!String(_targetFriend).startsWith('group_'))_ibMemContGoD(_targetFriend,_targetThread)}catch(e){};try{if(window._ibGbLiveD)_ibGbLiveD(aiMsg)}catch(e){};try{if(typeof _targetFriend!=='undefined'&&window.IBCALLW)IBCALLW.onAiMsg(_targetFriend,aiMsg)}catch(e){}
       if(_appHost||(activeFriendId===_targetFriend&&(!_callX||!activeThreadId))){/* v48 ⑮：通话细发送链不往正开着的话题视图里画；v101：房间发送画进房间列表 */
         appendChatBubble('ai',replyText,undefined,thinkingText||undefined,aiMsg.id,aiMsg.images,undefined,_wsRNs,undefined,_rtNow());
         if(_srchLogN.length||_memRNs.length)document.querySelectorAll('.chat-msg[data-msg-id="'+aiMsg.id+'"]').forEach(function(el){_amAppendExtraCards(el,_srchLogN,_memRNs)});/* 任务A：非流式也显示搜索/记忆卡 */
@@ -15995,6 +16008,7 @@ async function _callApiChatOnce(cfg,messages,opts){
   }
 
   /* OpenAI-compatible */
+  try{if(_apdOnD(cfg)){var _lmD=_msgs[_msgs.length-1];if(_lmD&&_lmD.role==='user'&&_lmD.id&&typeof _lmD.content==='string')window._ibSentPendD={cfgId:String(cfg.id||''),id:_lmD.id,content:_lmD.content,at:Date.now()}}}catch(e){}
   const ac=new AbortController();const tm=setTimeout(()=>ac.abort(),timeoutMs);
   try{
   const oBody={model:cfg.model,messages:_msgs.map(m=>{if(m&&m._fc){var _c=Object.assign({},m);delete _c._fc;return _c}return{role:m.role,content:_adaptContentForApi(m.content,'openai')}})};
@@ -26956,10 +26970,10 @@ function renderMatrix(){
     renderMeetRow();return;
   }
   var a=AIS[Math.min(selAI?selAI.get():0,AIS.length-1)],st=perm(a.id);
-  if(!st[0]&&st[1]){st=[0,0];AISTATE[a.id]=st;saveCalSettings()}
+  /* 读取、留言、相遇提醒三个开关各管各的（用户定）：不再按读取把留言改回关 */
   b.innerHTML='<span class="aiw">读取<label class="ib-switch"><input type="checkbox" data-ai="'+esc(a.id)+'" data-k="0"'+(st[0]?' checked':'')+'><span class="kn"></span></label></span>'
-    +'<span class="aiw"'+(!st[0]?' title="需先开启读取"':'')+'>留言<label class="ib-switch"><input type="checkbox" data-ai="'+esc(a.id)+'" data-k="1"'+(st[1]?' checked':'')+(!st[0]?' disabled':'')+'><span class="kn"></span></label></span>'
-    +'<span class="aiw"'+(!st[0]?' title="需先开启读取"':' title="相识满 100 天 / 520 天 / 每一周年的当天与前后一天进【临近日程】，聊天时自然提起"')+'>相遇提醒<label class="ib-switch"><input type="checkbox" data-ai="'+esc(a.id)+'" data-k="2"'+((st[0]&&st[2])?' checked':'')+(!st[0]?' disabled':'')+'><span class="kn"></span></label></span>';/* v85：相遇纪念日提醒（perm 第三位，与手机端同口径） */
+    +'<span class="aiw" title="在临近的事项与节日上留便笺，和读取分开设置">留言<label class="ib-switch"><input type="checkbox" data-ai="'+esc(a.id)+'" data-k="1"'+(st[1]?' checked':'')+'><span class="kn"></span></label></span>'
+    +'<span class="aiw" title="相识满 100 天 / 520 天 / 每一周年的当天与前后一天进【临近日程】，聊天时自然提起，和读取分开设置">相遇提醒<label class="ib-switch"><input type="checkbox" data-ai="'+esc(a.id)+'" data-k="2"'+(st[2]?' checked':'')+'><span class="kn"></span></label></span>';/* v85：相遇纪念日提醒（perm 第三位，与手机端同口径） */
   renderMeetRow();
 }
 /* v37 — 相遇纪念日改手动输入识别：写下日期即手动指定，清空恢复自动；「自动」键与三枚下拉已撤 */
@@ -27167,7 +27181,7 @@ $('#anni-hero').addEventListener('click',function(e){
 $('#ai-matrix-body').addEventListener('change',function(e){
   var i=e.target;if(!i.dataset||!i.dataset.ai)return;
   var st=AISTATE[i.dataset.ai]||[1,1],k=+i.dataset.k;
-  if(k===0){st[0]=i.checked?1:0;if(!st[0]){st[1]=0;st[2]=0}}else if(k===2){st[2]=i.checked?1:0;if(st[2])st[0]=1}else{st[1]=i.checked?1:0;if(st[1])st[0]=1}/* v85：第三位＝相遇提醒，依赖读取 */
+  st=st.slice();if(k===0||k===1||k===2)st[k]=i.checked?1:0;/* 读取、留言、相遇提醒三个开关各管各的（用户定；原来关读取连带关另两个、开另两个连带开读取） */
   AISTATE[i.dataset.ai]=st;saveCalSettings();renderMatrix();renderAnni();
 });
 $('#kind-seg').addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;
@@ -27371,21 +27385,19 @@ async function buildSys(cfg){
   await ensureData();
   if(!ALLOW_NOTES)return '';
   var p=perm(cfg.id);
-  if(!p[0]||!p[1])return '';
+  if(!p[1])return '';/* 便笺协议只看留言权限（用户定：和读取分开） */
   return CAL_NOTE_INSTR;
 }
 /* tail 日历栏：对该好友可见、处于各自提前窗口内的事项；一天之内内容不变 */
 async function buildTail(cfg){
   if(!cfg||!cfg.id)return '';
   await ensureData();
-  if(!ALLOW_NOTES)return '';/* v39 — 总开关关闭：日历栏整段不生成 */
-  var p=perm(cfg.id);
-  if(!p[0])return '';
+  var p=perm(cfg.id),rd=ALLOW_NOTES&&!!p[0],nt=ALLOW_NOTES&&!!p[1];/* 读取、留言、相遇提醒各管各的；节日提醒开着时所有 AI 都收到，不看读取与总开关（用户定）；总开关只管读取与留言 */
   var t=_calToday(),rows=[],pLines=[];
-  for(var q=0;q<ITEMS.length;q++){var pit=ITEMS[q];if(!pit||pit.kind!=='period'||!pit.remind||!visibleTo(pit,cfg.id))continue;var pi=_periodInfoD(pit,t);if(!pi)continue;var plead=(pit.lead!=null?pit.lead:LEAD);var bs=String(pit.date||'').split('-'),bt=bs.length===3?((+bs[1])+'月'+(+bs[2])+'日'):String(pit.date||'');var nt=pit.note?' 备注：'+pit.note:'';
+  for(var q=0;rd&&q<ITEMS.length;q++){var pit=ITEMS[q];if(!pit||pit.kind!=='period'||!pit.remind||!visibleTo(pit,cfg.id))continue;var pi=_periodInfoD(pit,t);if(!pi)continue;var plead=(pit.lead!=null?pit.lead:LEAD);var bs=String(pit.date||'').split('-'),bt=bs.length===3?((+bs[1])+'月'+(+bs[2])+'日'):String(pit.date||'');var nt=pit.note?' 备注：'+pit.note:'';
     if(pi.phase==='in')pLines.push('· 生理期：'+(pit.title||'生理期')+' — 今天是第 '+pi.day+' 天'+(pi.left>0?('，预计还有 '+pi.left+' 天结束'):'，预计今天结束')+'（按上次 '+bt+' 开始、周期 '+pi.cy+' 天推算）'+nt);
     else if(pi.du<=plead)pLines.push('· 生理期：'+(pit.title||'生理期')+' — 预计 '+pi.du+' 天后开始（'+pi.nextStr+'；按周期 '+pi.cy+' 天推算，经期约 '+pi.pd+' 天）'+nt)}/* v57 ⑤：生理期单独成行，不走台账与便笺标 */
-  for(var i=0;i<ITEMS.length;i++){
+  for(var i=0;rd&&i<ITEMS.length;i++){
     var it=ITEMS[i];
     if(!it.title||!it.remind||!visibleTo(it,cfg.id))continue;
     if(it.kind==='period')continue;
@@ -27414,7 +27426,7 @@ async function buildTail(cfg){
         if((hled.shown|0)>=3){hled.mentioned=1;ledPut(hled)}
         else{mark='〔未提及〕';hled.shown=(hled.shown|0)+1;ledPut(hled)}
       }
-      if(p[1]&&!hled.noted)mark+='〔可留笺〕';
+      if(nt&&!hled.noted)mark+='〔可留笺〕';
       lines.push('· '+r.hol+' — '+when+'（'+(+seg[1])+'月'+(+seg[2])+'日 · 节日）'+mark);
       continue;
     }
@@ -27425,7 +27437,7 @@ async function buildTail(cfg){
         if((led.shown|0)>=3){led.mentioned=1;ledPut(led)}
         else{mark+='〔未提及〕';led.shown=(led.shown|0)+1;ledPut(led)}
       }
-      if(p[1]&&!led.noted)mark+='〔可留笺〕';
+      if(nt&&!led.noted)mark+='〔可留笺〕';
     }
     /* v46 — 事项带时刻时一并告知 AI（只多一段短文本，不改变本栏结构） */
     lines.push('· '+kindCN(it)+'：'+it.title+' — '+when+'（'+tailDateText(it,r.show||r.occ)+(it.time?' '+it.time:'')+'）'+mark+(it.note?' 备注：'+it.note:''));
@@ -27439,8 +27451,7 @@ async function scanMentions(text,cfg){
   if(!text||!cfg||!cfg.id)return;
   try{
     await ensureData();
-    if(!ALLOW_NOTES)return;/* v39 — 总开关关闭：不再登记任何日历相关状态 */
-    if(!perm(cfg.id)[0])return;
+    var rd9=ALLOW_NOTES&&!!perm(cfg.id)[0];/* 节日的「已提及」照记（节日不看读取）；事项只在能读时记 */
     var t=_calToday();
     if(HOLIDAY_ON){
       var hs=holidaysIn(t,HOL_LEAD);
@@ -27450,7 +27461,7 @@ async function scanMentions(text,cfg){
         if(!hl.mentioned){hl.mentioned=1;ledPut(hl)}
       }
     }
-    for(var i=0;i<ITEMS.length;i++){
+    for(var i=0;rd9&&i<ITEMS.length;i++){
       var it=ITEMS[i];
       if(!it.remind||!it.id||!it.title||!visibleTo(it,cfg.id))continue;
       var o=nextOcc(it,t);if(!o)continue;
@@ -27473,11 +27484,11 @@ async function execNote(op,cfg){
   if(!cfg||!cfg.id)return fail('缺少会话信息');
   if(!ALLOW_NOTES)return fail('日历接入总开关已关闭');
   var p=perm(cfg.id);
-  if(!p[0]||!p[1])return fail('这位 AI 的日历留言权限未开启');
+  if(!p[1])return fail('这位 AI 的日历留言权限未开启');/* 只看留言权限；没开读取时只能留在节日上 */
   if(!op.item)return fail('标签缺少 item 事项标题');
   if(!op.body)return fail('便笺正文为空');
   var t=_calToday(),hit=null,occ=null,du=0,matched=false,remindMatched=false;
-  for(var i=0;i<ITEMS.length;i++){
+  for(var i=0;p[0]&&i<ITEMS.length;i++){
     var it=ITEMS[i];
     if(it.title!==op.item||!it.id||!visibleTo(it,cfg.id))continue;
     matched=true;if(!it.remind)continue;remindMatched=true;
