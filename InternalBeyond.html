@@ -7561,7 +7561,7 @@ i would like the room to be enough.
       <h3 id="guide-data">数据管理</h3>
       <p><strong>导出</strong>：导航栏 <strong>Export</strong> 按钮 → 全部数据导出为一个 JSON 文件（日志、分类、信件、聊天记录、话题频道、对话摘要、Blog 评论与批注、API 配置、个人资料、群组设置、记忆库、Auto Memory 档案、ICode 项目与上传文件）。</p>
       <p><strong>导入</strong>：<strong>Import</strong> 按钮 → 选择 JSON 备份文件。增量合并模式——新增数据被添加，已有数据不会被覆盖。</p>
-      <p><strong>导入聊天记录</strong>：<strong>Import</strong> 对话框顶部切到「官方聊天记录」。ChatGPT（设置 → 数据控制 → 导出数据，邮件里的压缩包）与 Claude（Settings → Privacy → Export data）的官方导出可以直接选压缩包，也可以先解压再选 conversations.json；别的应用导出的 JSON / JSONL（如 Operit）也能读，读完在「字段对应」里核对；自己记的逐行文本（.txt，每行「名字：内容」开头）填大致的开始与结束日期，消息按顺序均匀排进这段时间，不用手动加时间戳。选一位好友后默认自动分频道：认得出分段的（每个对话窗口、带标题的 JSON 会话）各建一个话题频道，认不出的全部进一个以文件名命名的频道，主线不受影响；也可以改选「并入主线」。重复导入自动跳过已导入的消息；图片与附件只留占位，工具调用不导入，思考过程可选带上。最近几次导入能在同一页一键撤销。与手机端同一套口径，导入的记录随备份两端互通。</p>
+      <p><strong>导入聊天记录</strong>：<strong>Import</strong> 对话框顶部切到「官方聊天记录」。ChatGPT（设置 → 数据控制 → 导出数据，邮件里的压缩包）、Claude（Settings → Privacy → Export data）与 DeepSeek（设置 → 数据管理 → 导出所有历史对话）的官方导出可以直接选压缩包，也可以先解压再选里面的 JSON 文件；别的应用导出的 JSON / JSONL（如 Operit）也能读，读完在「字段对应」里核对；自己记的逐行文本（.txt，每行「名字：内容」开头）填大致的开始与结束日期，消息按顺序均匀排进这段时间，不用手动加时间戳。选一位好友后默认自动分频道：认得出分段的（每个对话窗口、带标题的 JSON 会话）各建一个话题频道，认不出的全部进一个以文件名命名的频道，主线不受影响；也可以改选「并入主线」。重复导入自动跳过已导入的消息；图片与附件只留占位，工具调用不导入，思考过程可选带上。最近几次导入能在同一页一键撤销。与手机端同一套口径，导入的记录随备份两端互通。</p>
       <p><strong>工作台</strong>：选好文件再点开始，结束后列出各类写入数量。仅 ✕、取消或 Esc 可关闭。</p>
       <p><strong>密钥安全</strong>：所有 API 密钥仅存储在你的浏览器本地（IndexedDB），不会上传到任何服务器。API 请求从浏览器直接发往服务商或中转站。但请注意：浏览器扩展可能有权访问页面数据——如果你安装了来源不明的浏览器扩展，密钥存在被读取的风险。建议定期检查已安装的扩展，移除不信任的来源。</p>
         <p><strong>对外请求边界</strong>：界面与本地数据完全离线可用。只有三类操作会对外发请求——① 你自己配置的 AI 服务商或中转站（对话内容按你的配置直达对方，这是调用 API 的固有前提）；② Google Fonts 字体，以及富文档导出所需的开源库（pdf.js、docx、xlsx 等，只在你使用对应功能时才从公共 CDN 按需加载一次）；③ 给动态附定位时用的免密钥反地理编码。全站已启用 no-referrer，上述请求都不会携带你的站点地址。文件内不含任何统计或追踪脚本；顶部的净化哨兵还会持续移除在线传输渠道可能自动注入的统计信标。</p>
@@ -31148,7 +31148,7 @@ if(D.readyState==='loading')D.addEventListener('DOMContentLoaded',boot);else boo
 <script id="ib-chatimport-desk">
 (function(){
 'use strict';
-var HK='ib_ci_hist',CAP=120000,TCAP=30000,SRC={chatgpt:'ChatGPT',claude:'Claude',json:'JSON',txt:'文本'};
+var HK='ib_ci_hist',CAP=120000,TCAP=30000,SRC={chatgpt:'ChatGPT',claude:'Claude',deepseek:'DeepSeek',json:'JSON',txt:'文本'};
 function $(id){return document.getElementById(id)}
 function E(x){return String(x==null?'':x).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
 function T(x){try{toast(x)}catch(e){}}
@@ -31168,7 +31168,7 @@ function dbDeleteMany(st,keys){return new Promise(function(res,rej){if(!keys||!k
 async function _msgEdInvalM(cfg,thr,ts){try{var key='sum_'+(thr?thr.id:cfg.id);var x=await dbGet('chatSummaries',key);if(x&&Number(x.coveredUpTo||0)>=ts)await dbDelete('chatSummaries',key)}catch(e){}}
 function _friendsBump(){try{if(typeof loadFriendsList==='function')loadFriendsList()}catch(e){}}
 /* ── 读文件：zip 只解目录与目标条目 ── */
-async function unzip(file){var size=file.size,tl=Math.min(size,65557);var tail=new Uint8Array(await file.slice(size-tl).arrayBuffer());var eo=-1;
+async function unzip(file,prog){var size=file.size,tl=Math.min(size,65557);var tail=new Uint8Array(await file.slice(size-tl).arrayBuffer());var eo=-1;
   for(var i=tail.length-22;i>=0;i--){if(tail[i]===0x50&&tail[i+1]===0x4b&&tail[i+2]===0x05&&tail[i+3]===0x06){eo=i;break}}
   if(eo<0)throw new Error('压缩包读不出目录，可能不完整');var dv=new DataView(tail.buffer,tail.byteOffset,tail.byteLength);
   var n=dv.getUint16(eo+10,true),cdSize=dv.getUint32(eo+12,true),cdOff=dv.getUint32(eo+16,true);
@@ -31176,20 +31176,23 @@ async function unzip(file){var size=file.size,tl=Math.min(size,65557);var tail=n
   var cd=new Uint8Array(await file.slice(cdOff,cdOff+cdSize).arrayBuffer()),cv=new DataView(cd.buffer,cd.byteOffset,cd.byteLength),p=0,ents=[],td=new TextDecoder();
   for(var k=0;k<n&&p+46<=cd.length;k++){if(cv.getUint32(p,true)!==0x02014b50)break;var fl=cv.getUint16(p+28,true),xl=cv.getUint16(p+30,true),cl=cv.getUint16(p+32,true);
     ents.push({name:td.decode(cd.subarray(p+46,p+46+fl)),meth:cv.getUint16(p+10,true),csz:cv.getUint32(p+20,true),usz:cv.getUint32(p+24,true),lho:cv.getUint32(p+42,true)});p+=46+fl+xl+cl}
-  var pick=ents.filter(function(e){return /(^|\/)conversations[^\/]*\.json$/i.test(e.name)});
+  var dsx=ents.filter(function(e){return /(^|\/)chat_sessions\/[^\/]+\.json$/i.test(e.name)&&!/(^|\/)__MACOSX\//.test(e.name)});/* DeepSeek 新版导出：一个对话一个文件，全部解出（同名 _files 目录里的附件原图不读） */
+  var pick=dsx.length?dsx:ents.filter(function(e){return /(^|\/)conversations[^\/]*\.json$/i.test(e.name)});
   if(!pick.length){var js=ents.filter(function(e){return /\.jsonl?$/i.test(e.name)&&!/(^|\/)__MACOSX\//.test(e.name)}).sort(function(a,b){return b.usz-a.usz});if(js.length)pick=[js[0]]}
   if(!pick.length)throw new Error('压缩包里没有 JSON 聊天记录');
-  var out=[];for(var q=0;q<pick.length;q++){var e=pick[q];var lh=new DataView(await file.slice(e.lho,e.lho+30).arrayBuffer());if(lh.getUint32(0,true)!==0x04034b50)throw new Error('压缩包条目损坏：'+e.name);
+  async function one(e){var lh=new DataView(await file.slice(e.lho,e.lho+30).arrayBuffer());if(lh.getUint32(0,true)!==0x04034b50)throw new Error('压缩包条目损坏：'+e.name);
     var st=e.lho+30+lh.getUint16(26,true)+lh.getUint16(28,true),blob=file.slice(st,st+e.csz),txt;
     if(e.meth===0)txt=await blob.text();
     else if(e.meth===8){var ds;try{ds=new DecompressionStream('deflate-raw')}catch(x){throw new Error('这台设备的内核解不开压缩包，请先解压，再选里面的 conversations.json')}txt=await new Response(blob.stream().pipeThrough(ds)).text()}
     else throw new Error('压缩方式不认识，请先解压再选');
-    out.push({name:e.name,text:txt})}
+    if(!dsx.length)return {name:e.name,text:txt};
+    var o=null;try{o=dsSlim(JSON.parse(txt.replace(/^\ufeff/,'')))}catch(x){}return {name:e.name,obj:o}}/* DeepSeek：每份解出来当场读成对象、只留要导的片段，上千份原文不同时占内存；读不出的那份跳过 */
+  var out=[],B=dsx.length?8:1;for(var q=0;q<pick.length;q+=B){var bt=await Promise.all(pick.slice(q,q+B).map(one));bt.forEach(function(x){if(x.text!=null||x.obj)out.push(x)});if(prog&&pick.length>40){try{prog(Math.min(q+B,pick.length),pick.length)}catch(x){}}}
   return out}
-async function read(file){if(!file)throw new Error('没有选中文件');var head=new Uint8Array(await file.slice(0,4).arrayBuffer());
+async function read(file,prog){if(!file)throw new Error('没有选中文件');var head=new Uint8Array(await file.slice(0,4).arrayBuffer());
   var isZip=head[0]===0x50&&head[1]===0x4b&&head[2]===0x03&&head[3]===0x04;
-  if(isZip){var parts=await unzip(file);if(parts.length===1)return {name:parts[0].name,text:parts[0].text};
-    var roots=[];parts.forEach(function(p){var r=parseJ(p.text);if(Array.isArray(r))roots=roots.concat(r);else roots.push(r)});return {name:parts.map(function(p){return p.name}).join(' + '),root:roots}}
+  if(isZip){var parts=await unzip(file,prog);if(parts.length===1&&parts[0].text!=null)return {name:parts[0].name,text:parts[0].text};
+    var roots=[];parts.forEach(function(p){var r=p.text!=null?parseJ(p.text):p.obj;p.text=null;if(Array.isArray(r))roots=roots.concat(r);else roots.push(r)});return {name:parts.length>3?(file.name||parts[0].name):parts.map(function(p){return p.name}).join(' + '),root:roots}}
   if(file.size>400e6)throw new Error('文件太大（超过 400 MB），请先拆开');
   return {name:file.name||'',text:await file.text()}}
 function parseJ(text){text=String(text||'').replace(/^\ufeff/,'');try{return JSON.parse(text)}catch(e){}
@@ -31225,6 +31228,29 @@ function parseClaude(arr){var out=[];arr.forEach(function(cv,ci){if(!cv||!Array.
     var t=txt.join('\n\n').trim();if(ex.length)t=(t?t+'\n\n':'')+ex.join('\n');if(!t)return;
     var o={role:role,text:t,ts:toMs(m.created_at||m.updated_at),mid:String(m.uuid||('m'+mi))};if(role==='assistant'&&th.length)o.think=th.join('\n\n');msgs.push(o)});
   if(msgs.length)out.push({id:String(cv.uuid||('c'+ci)),title:String(cv.name||'').trim()||'未命名对话',msgs:msgs,t0:toMs(cv.created_at),named:true})});return out}
+
+function dsList(c){return !!(c&&Array.isArray(c.messages)&&c.messages.some(function(m){return m&&Array.isArray(m.fragments)}))}
+function dsTree(c){if(!c||!c.mapping||typeof c.mapping!=='object')return false;for(var k in c.mapping){var n=c.mapping[k];if(n&&n.message&&Array.isArray(n.message.fragments))return true}return false}
+function isDS(r){return Array.isArray(r)&&r.some(function(c){return dsList(c)||dsTree(c)})}
+var DSK=/^(REQUEST|RESPONSE|TEMPLATE_RESPONSE|THINK|FILE)$/;
+function dsSlim(o){if(o&&Array.isArray(o.messages))o.messages.forEach(function(m){if(m&&Array.isArray(m.fragments))m.fragments=m.fragments.filter(function(x){return x&&DSK.test(String(x.type||'').toUpperCase())})});return o}
+function dsPath(cv){var ms=cv.messages.filter(function(m){return m&&typeof m==='object'}),by={},seq=[],seen={},g=0;ms.forEach(function(m){if(m.id!=null)by[String(m.id)]=m});
+  var cur=cv.current_message_id!=null?by[String(cv.current_message_id)]:null;if(!cur)cur=ms[ms.length-1];if(!cur||cur.id==null)return ms.map(function(m,i){return {m:m,k:'m'+i}});
+  while(cur&&g++<200000){var k=String(cur.id);if(seen[k])break;seen[k]=1;seq.push({m:cur,k:k});cur=cur.parent_id!=null?by[String(cur.parent_id)]:null}return seq.reverse()}
+function dsTreePath(cv){var map=cv.mapping,node=cv.current_node!=null?String(cv.current_node):'',seq=[],g=0;
+  if(!node||!map[node]){var best=null,bt=-1;Object.keys(map).forEach(function(k){var nd=map[k];if(nd&&nd.message&&(!nd.children||!nd.children.length)){var t=toMs(nd.message.inserted_at||nd.message.created_at);if(t>=bt){bt=t;best=k}}});node=best}
+  while(node&&map[node]&&g++<200000){var nd=map[node];if(nd.message)seq.push({m:nd.message,k:String(nd.id!=null?nd.id:node)});node=nd.parent!=null?String(nd.parent):''}return seq.reverse()}
+function dsTag(f){var nm=String(f.file_name||f.name||'').slice(0,80);return '［'+((f.is_image===true||/\.(png|jpe?g|gif|webp|heic|bmp)$/i.test(nm))?'图片':'附件')+(nm?' · '+nm:'')+'］'}
+function dsOne(m){var txt=[],th=[],ex=[],ru=0;
+  (Array.isArray(m.fragments)?m.fragments:[]).forEach(function(x){if(!x)return;var ty=String(x.type||'').toUpperCase(),c=typeof x.content==='string'?x.content:'';
+    if(ty==='REQUEST'){ru=1;if(c.trim())txt.push(c)}else if(ty==='RESPONSE'||ty==='TEMPLATE_RESPONSE'){if(c.trim())txt.push(c)}else if(ty==='THINK'){if(c.trim())th.push(c)}
+    else if(ty==='FILE'&&Array.isArray(x.files))x.files.forEach(function(f){if(f)ex.push(dsTag(f))})});
+  (Array.isArray(m.files)?m.files:[]).forEach(function(f){if(f)ex.push(dsTag(f))});
+  var rl=String(m.role||'').toLowerCase(),role=rl==='user'?'user':(rl==='assistant'?'assistant':(rl?'':(ru?'user':'assistant')));if(!role)return null;
+  var t=txt.join('\n\n').trim();if(ex.length)t=(t?t+'\n\n':'')+ex.join('\n');if(!t)return null;return {role:role,text:t,think:role==='assistant'?th.join('\n\n').trim():''}}
+function parseDS(arr){var out=[];arr.forEach(function(cv,ci){if(!cv)return;var seq=dsList(cv)?dsPath(cv):(dsTree(cv)?dsTreePath(cv):null);if(!seq)return;var msgs=[];
+  seq.forEach(function(p){var x=dsOne(p.m);if(!x)return;var o={role:x.role,text:x.text,ts:toMs(p.m.inserted_at||p.m.created_at||p.m.updated_at),mid:p.k};if(x.think)o.think=x.think;msgs.push(o)});
+  if(msgs.length)out.push({id:String(cv.id||('c'+ci)),title:String(cv.title||'').trim()||'未命名对话',msgs:msgs,t0:toMs(cv.inserted_at||cv.created_at),named:true})});return out}
 /* ── 其它 JSON / JSONL：找消息数组 + 猜字段（字段可写 a.b 路径） ── */
 var KC=['content','text','mes','message','body','msg','value','content.text','content.parts','message.content','message.text','data.content','data.text'];
 var KR=['role','sender','author.role','is_user','isUser','fromMe','from_me','is_me','from','speaker','author','name','user'];
@@ -31276,9 +31302,9 @@ function fixTimes(convs,now){var k=0;convs.forEach(function(cv){var ms=cv.msgs,n
     else{for(var j=first-1;j>=0;j--){ms[j].ts=ms[j+1].ts-1000;nd++}for(var q=first+1;q<ms.length;q++){if(!(ms[q].ts>0)){ms[q].ts=ms[q-1].ts+1000;nd++}else if(ms[q].ts<=ms[q-1].ts)ms[q].ts=ms[q-1].ts+1}}
     cv.nd=nd;cv.t0=ms[0].ts;cv.t1=ms[ms.length-1].ts;cv.nu=ms.filter(function(m){return m.role==='user'}).length;cv.nth=ms.filter(function(m){return m.think}).length})}
 function parseText(text,name,ov,root){var r=root;if(r===undefined){try{r=parseJ(text)}catch(e){if(!String(text||'').trim())throw e;var tt=parseChatText(text,ov,name);return {src:'txt',convs:tt.convs,map:null,tmap:tt.tmap,root:null}}}/* 不是 JSON 就按逐行文本读；认不出双方名字也留在文本模式，让用户在「对话格式与时间」里手填 */var src='json',convs=[],map=null;
-  if(r&&!Array.isArray(r)&&typeof r==='object'){if(r.mapping&&typeof r.mapping==='object')r=[r];else if(Array.isArray(r.chat_messages))r=[r];else if(Array.isArray(r.conversations))r=r.conversations}
-  if(isGPT(r)){src='chatgpt';convs=parseGPT(r)}else if(isClaude(r)){src='claude';convs=parseClaude(r)}else{var g=parseGeneric(r,ov,String(name||'').replace(/^.*\//,'').replace(/\.(jsonl?|zip|txt)$/i,''));convs=g.convs;map=g.map}
-  fixTimes(convs,Date.now());return {src:src,convs:convs,map:map,root:r}}
+  if(r&&!Array.isArray(r)&&typeof r==='object'){if(dsList(r)||(r.mapping&&typeof r.mapping==='object'))r=[r];else if(Array.isArray(r.chat_messages))r=[r];else if(Array.isArray(r.conversations))r=r.conversations}
+  if(isDS(r)){src='deepseek';convs=parseDS(r)}else if(isGPT(r)){src='chatgpt';convs=parseGPT(r)}else if(isClaude(r)){src='claude';convs=parseClaude(r)}else{var g=parseGeneric(r,ov,String(name||'').replace(/^.*\//,'').replace(/\.(jsonl?|zip|txt)$/i,''));convs=g.convs;map=g.map}
+  fixTimes(convs,Date.now());return {src:src,convs:convs,map:map,root:src==='deepseek'?null:r}}/* DeepSeek 不走「字段对应」，原始对象不留着占内存 */
 
 /* ── 落库 ── */
 function sigsOf(fid){return new Promise(function(res,rej){var sig=new Set();try{var rq=db.transaction('chatMessages').objectStore('chatMessages').index('byFriend').openCursor(IDBKeyRange.only(fid));
@@ -31356,10 +31382,10 @@ function inject(){try{if(typeof _ioMode==='undefined'||_ioMode!=='import')return
 function mount(){cssD();var bd=$('io-bd'),ft=$('io-ft');if(!bd||!ft)return;var b=bx();if(b)b.classList.add('cid-wide');var sub=$('io-sub');if(sub)sub.textContent='导入聊天记录';
   S={convs:[],sel:{},src:'',file:'',root:null,map:null,busy:false,mode:'auto',think:true};
   bd.innerHTML=tabs('chat')+'<div class="cid">'
-   +'<div class="io-note">把 ChatGPT、Claude 的官方导出，或别的应用导出、自己记下的聊天记录，导进一位好友的聊天里：消息按原始时间落库，和站内消息一样能改、能删、进上下文。全程在本机完成，不联网。</div>'
-   +'<div class="io-drop" id="cid-drop"><div class="io-dt">点击选择文件，或把文件拖到这里</div><div class="io-ds">官方导出的压缩包 / conversations.json · 其它 JSON / JSONL · 逐行文本 .txt</div></div>'
+   +'<div class="io-note">把 ChatGPT、Claude、DeepSeek 的官方导出，或别的应用导出、自己记下的聊天记录，导进一位好友的聊天里：消息按原始时间落库，和站内消息一样能改、能删、进上下文。全程在本机完成，不联网。</div>'
+   +'<div class="io-drop" id="cid-drop"><div class="io-dt">点击选择文件，或把文件拖到这里</div><div class="io-ds">官方导出的压缩包 / 解压后的 JSON · 其它 JSON / JSONL · 逐行文本 .txt</div></div>'
    +'<div class="cid-st" id="cid-st"></div>'
-   +'<div class="cid-pv">ChatGPT：设置 → 数据控制 → 导出数据，邮件里下载的压缩包；Claude：Settings → Privacy → Export data。压缩包可以直接选，也可以先解压再选里面的 conversations.json。别的应用导出的 JSON / JSONL（如 Operit）也能读，读完在「字段对应」里核对；自己记的「用户：…」「AI：…」逐行文本（.txt）也能读，时间按你填的日期范围排。</div>'
+   +'<div class="cid-pv">ChatGPT：设置 → 数据控制 → 导出数据，邮件里下载的压缩包；Claude：Settings → Privacy → Export data；DeepSeek：设置 → 数据管理 → 导出所有历史对话。压缩包可以直接选，也可以先解压再选里面的 JSON 文件。别的应用导出的 JSON / JSONL（如 Operit）也能读，读完在「字段对应」里核对；自己记的「用户：…」「AI：…」逐行文本（.txt）也能读，时间按你填的日期范围排。</div>'
    +'<div id="cid-map" hidden><div class="cid-lab">字段对应<small>别的应用导出的记录</small></div><div class="cid-card">'+field('角色字段','cid-kr','')+field('内容字段','cid-kc','')+field('时间字段','cid-kt','没有可留空')+field('哪个角色值是「我」','cid-ku','')
    +'<button class="btn cid-sm" data-a="remap">按这几项重新读</button><div class="cid-pv" id="cid-pv"></div><div class="cid-pv">字段可以写路径，如 author.role；角色值是「我」的算我发的，system / tool 跳过，其余都算 TA。</div></div></div>'
    +'<div id="cid-tmap" hidden><div class="cid-lab">对话格式与时间<small>自己记的逐行文本</small></div><div class="cid-card">'+field('我的名字（行首）','cid-tu','')+field('TA 的名字（行首）','cid-ta','')+field('开始日期','cid-t0','如 2024-03-01')+field('结束日期','cid-t1','如 2024-06-30')
@@ -31379,7 +31405,7 @@ function unmount(){if(S&&S.busy)return;S=null;var b=bx();if(b)b.classList.remove
 function stat(html,err){var el=q('#cid-st');if(!el)return;el.innerHTML=html||'';el.classList.toggle('err',!!err)}
 async function load(file){if(!S)return;stat('正在读取 <b>'+E(file.name)+'</b> …');S.convs=[];S.sel={};S.file=file.name||'';['#cid-body','#cid-map','#cid-tmap'].forEach(function(x){var e=q(x);if(e)e.hidden=true});
   var tv=null;try{var a0=dayMs((q('#cid-t0')||{}).value,false),a1=dayMs((q('#cid-t1')||{}).value,true);if(!isNaN(a0)&&!isNaN(a1)&&!(a0&&a1&&a1<=a0))tv={t0:a0,t1:a1}}catch(e){}
-  try{var r=await read(file);var p=parseText(r.text,r.name||file.name,tv,r.root);S.root=p.root;S.src=p.src;S.map=p.map;S.tmap=p.tmap||null;S.raw=r.text||'';S.convs=p.convs;S.rname=r.name||file.name}catch(e){stat(E((e&&e.message)||String(e)),true);return}
+  try{var r=await read(file,function(k,n){stat('已解压 '+k+' / '+n+' 段对话…')});var p=parseText(r.text,r.name||file.name,tv,r.root);S.root=p.root;S.src=p.src;S.map=p.map;S.tmap=p.tmap||null;S.raw=r.text||'';S.convs=p.convs;S.rname=r.name||file.name}catch(e){stat(E((e&&e.message)||String(e)),true);return}
   after()}
 function after(){var n=S.convs.length,m=0,th=0;S.convs.forEach(function(c,i){m+=c.msgs.length;th+=c.nth||0;S.sel[i]=1});
   var tm=q('#cid-tmap');if(tm){tm.hidden=S.src!=='txt';if(S.src==='txt'&&S.tmap){q('#cid-tu').value=S.tmap.u||'';q('#cid-ta').value=S.tmap.a||'';tpv()}}
