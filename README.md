@@ -4,11 +4,13 @@
 
 该项目包含14个核心功能模块与两套视觉主题，支持同时对接多个 AI 模型。
 
-所有数据储存在本地，不依赖任何网络服务器。
+所有数据储存在本地，不依赖后端服务器。
 
 个人资料、角色立绘、系统提示词等均可自定义，用户数据支持一键导出与导入。
 
-**本项目永久免费开源。**
+Internal Beyond 关切于关系与情感的连续性。你的记忆与关系本身的分量，不该因不可抗的外界因素而断裂、消失。
+
+**本项目免费提供，源代码公开。**
 
 > 🌏 **手机版 / IB-Mobile**: [InternalBeyond-Mobile](https://github.com/Sui-IB/InternalBeyond-Mobile)
 > 
@@ -268,6 +270,7 @@ IB 支持多种 AI 服务（最多 30 个端口，归档区另 60 个）：
 
 - **导出**：导航栏 Export → 全部数据导出为 JSON 文件（日志、分类、信件、聊天记录、话题频道、对话摘要、Blog 评论与批注、API 配置、个人资料、群组设置、记忆库、Auto Memory 档案、Circle 动态与资料、ICode 项目与上传文件、日历事项 / 便笺与设置）。Memory 另支持独立导入导出。
 - **导入**：Import → 选择 JSON 备份文件，增量合并不覆盖。
+- **导入官方聊天记录**：Import 对话框顶部切到「官方聊天记录」。ChatGPT / Claude / DeepSeek 的官方导出可直接选压缩包，别的应用导出的 JSON / JSONL（如 Operit）与自己记的逐行文本也能识别。默认每个对话窗口各建一个话题频道，可撤销，全程本机完成。
 - **归档**：删除 API 时可选择归档而非彻底删除，密钥清除但聊天记录与 Auto Memory 档案保留，随时可恢复。归档区上限 60 个。
 - **存储**：浏览器 IndexedDB，完全离线。
 - **⚠ 备份建议**：数据仅存于浏览器本地，清除浏览器数据将永久丢失。请定期备份。
@@ -302,13 +305,15 @@ game/
 - **字体**：Cormorant Garamond（标题）· Noto Sans SC（正文与 UI）· Noto Serif SC（按钮与强调）· Raleway（副标题）· Great Vibes（Sui 签名）· Pinyon Script（海岸标题）· Spectral（Claude 签名）。通过 Google Fonts CDN 加载。
 - **视觉**：CSS 玻璃拟态、Canvas 雨滴（45 滴）与水波纹、棱镜光影、烛火月光、浮动微尘、交叉溶解过渡。Memory 海岸以 WebGL 着色器实时绘制。
 - **AI 协议**：Anthropic 原生格式 + OpenAI 兼容格式，覆盖官方及中转站 API。
-- **构建**：Claude (Opus 4.6) 构建 · Claude (Fable 5.1) · Claude (Opus 5.5) · Claude (Opus 4.8) · Claude (Sonnet 4.6) · Claude (Fable 5) · Claude (Opus 5) · ChatGPT (5.6 Sol) 参与辅助构建 · GPT-IMAGE-2 贴图 · Adobe Photoshop CS 设计编绘。
+- **构建**：Claude (Opus 4.6) 构建 · Claude (Fable 5.2) · Claude (Fable 5.1) · Claude (Opus 5.5) · Claude (Opus 4.8) · Claude (Sonnet 4.6) · Claude (Fable 5) · Claude (Opus 5) · ChatGPT (5.6 Sol) 参与辅助构建 · GPT-IMAGE-2 贴图 · Adobe Photoshop CS 设计编绘。
 
 ---
 
 ## ✦ Introduction (EN)
 
-**Internal Beyond** is a fully offline, single-file personal website with multi-AI support. Fourteen modules, two visual themes, all data stored locally. Free and open source.
+**Internal Beyond** is a fully offline, single-file personal website with multi-AI support. Fourteen modules, two visual themes, all data stored locally. Free for non-commercial use; source code publicly available.
+
+Internal Beyond cares about the continuity of a relationship and the feelings in it. Your memories, and the weight of the relationship itself, should not break off or disappear because of outside circumstances beyond your control.
 
 Connect your own AI API keys to unlock all interactive features. Supports Claude, GPT, DeepSeek, Gemini, and custom relay endpoints.
 
@@ -326,6 +331,7 @@ Connect your own AI API keys to unlock all interactive features. Supports Claude
 - **Profile** — Liquid glass personal card.
 - **API** — Up to 30 independent endpoints (plus 60 archived) with custom nicknames, relationships, and system prompts.
 - **ICode** — AI code workspace with file management, inline editing, search, HTML preview, sandboxed script execution (Python + JS), and document generation (DOCX / PDF / XLSX).
+- **Import** — Bring in official ChatGPT / Claude / DeepSeek exports (zip or JSON), JSON / JSONL from other apps (e.g. Operit), or plain-text transcripts; each conversation becomes its own topic channel, undoable, entirely local.
 - **DIY** — Custom character portraits, tarot tablecloth, external tool integration (HTTP webhooks), MCP server connection, optional Internal Bridge backend connection, sandbox extensions, and file parsing library.
 - **Cinema** (DLC) — Watch local videos with AI: per-frame analysis, subtitle sync, recap generation, and a film-strip timeline.
 - **Signs** (DLC) — Local ephemeris engine: natal charts, whole-sign / Placidus / equal house systems, tropical and sidereal zodiacs, true and mean lunar nodes. All computation runs in the browser; no network requests.
@@ -354,6 +360,12 @@ Any copy, deployment, mirror, fork or modified version must keep the copyright l
 - 小红书：3628686381
 - Bilibili：[主页](https://space.bilibili.com/3546561346800463)
 
+## ✦ 使用须知
+
+- **IB 是一个客户端**：它运行在你自己的浏览器里，本身不提供 AI 模型或生成式 AI 服务。TA 的回复由你接入的服务商生成，可能有错误，不能作为专业咨询或医疗建议的参考。
+- **数据去哪**：数据存在本机浏览器。用到联网功能时，相应内容直接发往你配置的第三方：AI 接口或中转站（对话和密钥都会经过它）、云端语音与向量服务、联网搜索与图像生成、MCP 与外部工具、Internal Bridge（如已配置）。页面加载时会向 Google Fonts 取字体，富文档导出库从公共 CDN 按需加载一次，Circle 定位用到免密钥反地理编码。这些服务各按自己的条款与隐私政策处理数据。
+- **你这一边**：密钥、账号和中转站由你自己选择、自己保管。使用时请遵守你所在地的法律法规，以及各服务商的使用条款（包括年龄要求与内容规范）。
+
 ## ✦ 许可与版权
 
 © 2025–2026 Sui. Internal Beyond 在 GitHub 公开源代码，并免费供个人、学习、研究及其他非商业用途使用。公开源代码不等于放弃版权，也不授权商业使用或二次贩卖。
@@ -368,7 +380,7 @@ Any copy, deployment, mirror, fork or modified version must keep the copyright l
 **署名与声明保留**：任何复制、部署、镜像、Fork 或修改版本，均须保留版权行「Copyright © 2025–2026 Sui」与 `LICENSE` 顶部的 Required Notice、`LICENSE` 与 `LICENSES/` 文件、界面内的作者署名（Sui / 水、联系邮箱与原仓库链接）以及指向本仓库的可见链接；修改版须明确标注为非官方修改版，不得冒充官方或声称获得授权。署名权属于作者本人，不随任何许可转让。
 未经 Sui 书面授权，不得出售、收费分发、打包进付费产品或服务、商业托管、收费部署或以其他方式获取商业利益。
 
-本项目使用 Anthropic Claude (Opus 4.6) 进行开发构建，Anthropic Claude (Fable 5)、Claude (Fable 5.1)、Claude (Opus 5.5)、Claude (Opus 4.8)、Claude (Sonnet 4.6)、Claude (Opus 5)、ChatGPT (5.6 Sol) 亦参与了编程工作。项目图像素材均由 OpenAI GPT-IMAGE-2 生成，并由作者使用 Adobe Photoshop CS 进行修改、界面设计与编绘。AI 工具为辅助创作工具，不对项目内容拥有版权。本声明适用于项目的所有版本与衍生形式。第三方服务名称与商标归各自权利人所有。
+本项目使用 Anthropic Claude (Opus 4.6) 进行开发构建，Anthropic Claude (Fable 5)、Claude (Fable 5.1)、Claude (Fable 5.2)、Claude (Opus 5.5)、Claude (Opus 4.8)、Claude (Sonnet 4.6)、Claude (Opus 5)、ChatGPT (5.6 Sol) 亦参与了编程工作。项目图像素材均由 OpenAI GPT-IMAGE-2 生成，并由作者使用 Adobe Photoshop CS 进行修改、界面设计与编绘。AI 工具为辅助创作工具，不对项目内容拥有版权。本声明适用于项目的所有版本与衍生形式。第三方服务名称与商标归各自权利人所有。
 
 完整条款见根目录 `LICENSE` 与 `LICENSES/` 文件夹。商业授权联系：1282901880@qq.com。
 
