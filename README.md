@@ -8,9 +8,6 @@
 
 个人资料、角色立绘、系统提示词等均可自定义，用户数据支持一键导出与导入。
 
-Internal Beyond 关切于关系与情感的连续性。你的记忆与关系本身的分量，不该因不可抗的外界因素而断裂、消失。
-
-**本项目免费提供，源代码公开。**
 
 > 🌏 **手机版 / IB-Mobile**: [InternalBeyond-Mobile](https://github.com/Sui-IB/InternalBeyond-Mobile)
 > 
@@ -384,4 +381,5 @@ Any copy, deployment, mirror, fork or modified version must keep the copyright l
 
 完整条款见根目录 `LICENSE` 与 `LICENSES/` 文件夹。商业授权联系：1282901880@qq.com。
 
+Internal Beyond项目关切于关系与情感的连续性。你的记忆与关系本身的分量，不该因不可抗的外界因素而断裂、消失。
 **本项目官方版本免费提供。** 如果你通过付费方式获得了未经作者授权的副本，请停止传播，并通过上方联系方式获取免费正版。
