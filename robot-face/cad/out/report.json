@@ -1,0 +1,560 @@
+{
+ "parts": [
+  {
+   "name": "frame",
+   "qty": 1,
+   "volume_cm3": 42.15,
+   "size_mm": [
+    80.0,
+    86.0,
+    57.1
+   ],
+   "print": "前板正面贴平台，后部结构朝上；后横梁和颈座需要支撑"
+  },
+  {
+   "name": "teeth_upper",
+   "qty": 1,
+   "volume_cm3": 0.59,
+   "size_mm": [
+    28.0,
+    2.5,
+    10.0
+   ],
+   "print": "牙面朝上"
+  },
+  {
+   "name": "cradle",
+   "qty": 1,
+   "volume_cm3": 2.72,
+   "size_mm": [
+    56.0,
+    50.0,
+    4.5
+   ],
+   "print": "倒扣，顶面贴平台"
+  },
+  {
+   "name": "eye_cup",
+   "qty": 2,
+   "volume_cm3": 1.45,
+   "size_mm": [
+    20.2,
+    20.2,
+    26.0
+   ],
+   "print": "虹膜面朝下，后摆臂需要支撑；建议光固化"
+  },
+  {
+   "name": "lid_upper_r",
+   "qty": 1,
+   "volume_cm3": 0.4,
+   "size_mm": [
+    23.2,
+    16.8,
+    16.9
+   ],
+   "print": "建议光固化；FDM 需要支撑"
+  },
+  {
+   "name": "lid_upper_l",
+   "qty": 1,
+   "volume_cm3": 0.4,
+   "size_mm": [
+    23.2,
+    16.8,
+    16.9
+   ],
+   "print": "建议光固化；FDM 需要支撑"
+  },
+  {
+   "name": "lid_lower_r",
+   "qty": 1,
+   "volume_cm3": 0.44,
+   "size_mm": [
+    25.6,
+    20.8,
+    16.9
+   ],
+   "print": "建议光固化；FDM 需要支撑"
+  },
+  {
+   "name": "lid_lower_l",
+   "qty": 1,
+   "volume_cm3": 0.42,
+   "size_mm": [
+    25.6,
+    14.6,
+    16.9
+   ],
+   "print": "建议光固化；FDM 需要支撑"
+  },
+  {
+   "name": "keeper",
+   "qty": 1,
+   "volume_cm3": 0.5,
+   "size_mm": [
+    19.6,
+    24.0,
+    4.6
+   ],
+   "print": "平放"
+  },
+  {
+   "name": "brow_lever_r",
+   "qty": 1,
+   "volume_cm3": 0.18,
+   "size_mm": [
+    26.2,
+    7.2,
+    2.0
+   ],
+   "print": "磁铁孔朝上平放"
+  },
+  {
+   "name": "brow_lever_l",
+   "qty": 1,
+   "volume_cm3": 0.18,
+   "size_mm": [
+    26.2,
+    7.2,
+    2.0
+   ],
+   "print": "磁铁孔朝上平放"
+  },
+  {
+   "name": "mouth_lever_r",
+   "qty": 1,
+   "volume_cm3": 0.16,
+   "size_mm": [
+    14.3,
+    13.8,
+    2.0
+   ],
+   "print": "磁铁孔朝上平放"
+  },
+  {
+   "name": "mouth_lever_l",
+   "qty": 1,
+   "volume_cm3": 0.16,
+   "size_mm": [
+    14.3,
+    13.8,
+    2.0
+   ],
+   "print": "磁铁孔朝上平放"
+  },
+  {
+   "name": "pan_arm",
+   "qty": 1,
+   "volume_cm3": 0.18,
+   "size_mm": [
+    20.6,
+    7.2,
+    2.0
+   ],
+   "print": "平放"
+  },
+  {
+   "name": "jaw",
+   "qty": 1,
+   "volume_cm3": 6.31,
+   "size_mm": [
+    80.5,
+    58.5,
+    42.5
+   ],
+   "print": "下巴底面贴平台，两条臂需要支撑"
+  },
+  {
+   "name": "stand",
+   "qty": 1,
+   "volume_cm3": 41.27,
+   "size_mm": [
+    90.0,
+    100.0,
+    58.5
+   ],
+   "print": "底板贴平台"
+  }
+ ],
+ "linkage": {
+  "lid_upper_l": {
+   "rod_length_mm": 21.13,
+   "horn_radius_mm": 10.0,
+   "table": [
+    {
+     "output_deg": -71.0,
+     "horn_deg": -31.0,
+     "transmission_deg": 37.0
+    },
+    {
+     "output_deg": -60.2,
+     "horn_deg": -24.6,
+     "transmission_deg": 52.0
+    },
+    {
+     "output_deg": -49.5,
+     "horn_deg": -16.9,
+     "transmission_deg": 66.0
+    },
+    {
+     "output_deg": -38.8,
+     "horn_deg": -8.6,
+     "transmission_deg": 79.0
+    },
+    {
+     "output_deg": -28.0,
+     "horn_deg": 0.0,
+     "transmission_deg": 90.0
+    },
+    {
+     "output_deg": -17.2,
+     "horn_deg": 8.6,
+     "transmission_deg": 80.0
+    },
+    {
+     "output_deg": -6.5,
+     "horn_deg": 17.2,
+     "transmission_deg": 70.0
+    },
+    {
+     "output_deg": 4.2,
+     "horn_deg": 26.0,
+     "transmission_deg": 58.0
+    },
+    {
+     "output_deg": 15.0,
+     "horn_deg": 35.8,
+     "transmission_deg": 43.0
+    }
+   ],
+   "horn_deg_at_pose0": 22.5
+  },
+  "lid_upper_r": {
+   "rod_length_mm": 21.13,
+   "horn_radius_mm": 10.0,
+   "table": [
+    {
+     "output_deg": -71.0,
+     "horn_deg": 31.0,
+     "transmission_deg": 37.0
+    },
+    {
+     "output_deg": -60.2,
+     "horn_deg": 24.6,
+     "transmission_deg": 52.0
+    },
+    {
+     "output_deg": -49.5,
+     "horn_deg": 16.9,
+     "transmission_deg": 66.0
+    },
+    {
+     "output_deg": -38.8,
+     "horn_deg": 8.6,
+     "transmission_deg": 79.0
+    },
+    {
+     "output_deg": -28.0,
+     "horn_deg": 0.0,
+     "transmission_deg": 90.0
+    },
+    {
+     "output_deg": -17.2,
+     "horn_deg": -8.6,
+     "transmission_deg": 80.0
+    },
+    {
+     "output_deg": -6.5,
+     "horn_deg": -17.2,
+     "transmission_deg": 70.0
+    },
+    {
+     "output_deg": 4.2,
+     "horn_deg": -26.0,
+     "transmission_deg": 58.0
+    },
+    {
+     "output_deg": 15.0,
+     "horn_deg": -35.8,
+     "transmission_deg": 43.0
+    }
+   ],
+   "horn_deg_at_pose0": -22.5
+  },
+  "lid_lower": {
+   "rod_length_mm": 22.11,
+   "horn_radius_mm": 5.0,
+   "table": [
+    {
+     "output_deg": 0.0,
+     "horn_deg": -19.1,
+     "transmission_deg": 67.0
+    },
+    {
+     "output_deg": 3.1,
+     "horn_deg": -14.0,
+     "transmission_deg": 64.0
+    },
+    {
+     "output_deg": 6.2,
+     "horn_deg": -9.1,
+     "transmission_deg": 60.0
+    },
+    {
+     "output_deg": 9.4,
+     "horn_deg": -4.4,
+     "transmission_deg": 56.0
+    },
+    {
+     "output_deg": 12.5,
+     "horn_deg": 0.0,
+     "transmission_deg": 53.0
+    },
+    {
+     "output_deg": 15.6,
+     "horn_deg": 4.2,
+     "transmission_deg": 49.0
+    },
+    {
+     "output_deg": 18.8,
+     "horn_deg": 8.1,
+     "transmission_deg": 45.0
+    },
+    {
+     "output_deg": 21.9,
+     "horn_deg": 11.8,
+     "transmission_deg": 41.0
+    },
+    {
+     "output_deg": 25.0,
+     "horn_deg": 15.2,
+     "transmission_deg": 37.0
+    }
+   ],
+   "horn_deg_at_pose0": -19.1
+  },
+  "eye_tilt": {
+   "rod_length_mm": 27.0,
+   "horn_radius_mm": 8.0,
+   "table": [
+    {
+     "output_deg": -15.0,
+     "horn_deg": -41.6,
+     "transmission_deg": 43.0
+    },
+    {
+     "output_deg": -11.2,
+     "horn_deg": -29.5,
+     "transmission_deg": 57.0
+    },
+    {
+     "output_deg": -7.5,
+     "horn_deg": -19.1,
+     "transmission_deg": 70.0
+    },
+    {
+     "output_deg": -3.8,
+     "horn_deg": -9.4,
+     "transmission_deg": 80.0
+    },
+    {
+     "output_deg": 0.0,
+     "horn_deg": 0.0,
+     "transmission_deg": 90.0
+    },
+    {
+     "output_deg": 3.8,
+     "horn_deg": 9.4,
+     "transmission_deg": 81.0
+    },
+    {
+     "output_deg": 7.5,
+     "horn_deg": 19.0,
+     "transmission_deg": 72.0
+    },
+    {
+     "output_deg": 11.2,
+     "horn_deg": 28.9,
+     "transmission_deg": 64.0
+    },
+    {
+     "output_deg": 15.0,
+     "horn_deg": 39.3,
+     "transmission_deg": 56.0
+    }
+   ],
+   "horn_deg_at_pose0": 0.0
+  },
+  "jaw": {
+   "rod_length_mm": 28.41,
+   "horn_radius_mm": 4.5,
+   "table": [
+    {
+     "output_deg": 0.0,
+     "horn_deg": 21.0,
+     "transmission_deg": 51.0
+    },
+    {
+     "output_deg": 1.4,
+     "horn_deg": 15.6,
+     "transmission_deg": 51.0
+    },
+    {
+     "output_deg": 2.8,
+     "horn_deg": 10.3,
+     "transmission_deg": 50.0
+    },
+    {
+     "output_deg": 4.1,
+     "horn_deg": 5.1,
+     "transmission_deg": 50.0
+    },
+    {
+     "output_deg": 5.5,
+     "horn_deg": 0.0,
+     "transmission_deg": 49.0
+    },
+    {
+     "output_deg": 6.9,
+     "horn_deg": -5.1,
+     "transmission_deg": 48.0
+    },
+    {
+     "output_deg": 8.2,
+     "horn_deg": -10.1,
+     "transmission_deg": 47.0
+    },
+    {
+     "output_deg": 9.6,
+     "horn_deg": -15.1,
+     "transmission_deg": 47.0
+    },
+    {
+     "output_deg": 11.0,
+     "horn_deg": -20.2,
+     "transmission_deg": 46.0
+    }
+   ],
+   "horn_deg_at_pose0": 21.0
+  }
+ },
+ "interference": {
+  "中立": {
+   "pose": {},
+   "hits": []
+  },
+  "左上看+睁大+微笑+张嘴": {
+   "pose": {
+    "pan": 25,
+    "tilt": 15,
+    "ul": 15.0,
+    "ur": 15.0,
+    "ll": 0,
+    "bl": 22,
+    "br": 22,
+    "ml": 25,
+    "mr": 25,
+    "jaw": 11
+   },
+   "hits": []
+  },
+  "右下看+闭眼+皱眉+撇嘴": {
+   "pose": {
+    "pan": -25,
+    "tilt": -15,
+    "ul": -71.0,
+    "ur": -71.0,
+    "ll": 25,
+    "bl": -22,
+    "br": -22,
+    "ml": -25,
+    "mr": -25,
+    "jaw": 0
+   },
+   "hits": []
+  },
+  "左下看+左眼眨": {
+   "pose": {
+    "pan": 25,
+    "tilt": -15,
+    "ul": -71.0,
+    "ur": 15.0,
+    "ll": 25,
+    "bl": -22,
+    "br": 22,
+    "ml": 25,
+    "mr": -25,
+    "jaw": 11
+   },
+   "hits": []
+  },
+  "右上看+右眼眨": {
+   "pose": {
+    "pan": -25,
+    "tilt": 15,
+    "ul": 15.0,
+    "ur": -71.0,
+    "ll": 0,
+    "bl": 22,
+    "br": -22,
+    "ml": -25,
+    "mr": 25,
+    "jaw": 5
+   },
+   "hits": []
+  },
+  "上看+闭眼+张嘴": {
+   "pose": {
+    "pan": 0,
+    "tilt": 15,
+    "ul": -71.0,
+    "ur": -71.0,
+    "ll": 25,
+    "jaw": 11
+   },
+   "hits": []
+  },
+  "下看+睁大": {
+   "pose": {
+    "pan": 0,
+    "tilt": -15,
+    "ul": 15.0,
+    "ur": 15.0,
+    "ll": 0
+   },
+   "hits": []
+  },
+  "半程 A": {
+   "pose": {
+    "pan": 12,
+    "tilt": 8,
+    "ul": -35,
+    "ur": -35,
+    "ll": 12,
+    "bl": 10,
+    "br": 10,
+    "ml": 12,
+    "mr": 12,
+    "jaw": 6
+   },
+   "hits": []
+  },
+  "半程 B": {
+   "pose": {
+    "pan": -12,
+    "tilt": -8,
+    "ul": -50,
+    "ur": -20,
+    "ll": 20,
+    "bl": -10,
+    "br": -10,
+    "ml": -12,
+    "mr": -12,
+    "jaw": 3
+   },
+   "hits": []
+  }
+ },
+ "interference_total": 0
+}

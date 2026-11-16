@@ -1,0 +1,151 @@
+{
+  "name": "RF-01",
+  "version": "0.1.0",
+  "convention": {
+    "sides": "L/R are the robot's own left/right. The robot's left appears on the viewer's right.",
+    "axes": "CAD frame (right-handed): +X = robot's right (on the viewer's left when facing it), +Y = forward (out of the face), +Z = up. Origin = midpoint between the eye centres.",
+    "pose": "Pose values are dimensionless. 0 is the relaxed/neutral position of every channel.",
+    "calibration": "us_min / us_neutral / us_max are the servo pulse widths (microseconds) at pose_min / 0 / pose_max. Interpolation is piecewise linear. For channels with pose_min = 0, us_min equals us_neutral. The defaults come from the CAD linkage (cad/out/report.json) at a nominal 10 us per degree and assume a longer pulse turns the horn counter-clockwise seen from the horn side; every servo must still be calibrated in the app after assembly."
+  },
+  "pwm": {
+    "frequency_hz": 50,
+    "hard_min_us": 500,
+    "hard_max_us": 2500,
+    "default_limit_min_us": 900,
+    "default_limit_max_us": 2100
+  },
+  "channels": [
+    {
+      "id": "eye_pan",
+      "pca": 0,
+      "label": "眼球左右",
+      "pose_min": -1.0,
+      "pose_max": 1.0,
+      "us_min": 1750,
+      "us_neutral": 1500,
+      "us_max": 1250,
+      "meaning": "+1 = both eyes look toward the robot's left (25 deg)"
+    },
+    {
+      "id": "eye_tilt",
+      "pca": 1,
+      "label": "眼球上下",
+      "pose_min": -1.0,
+      "pose_max": 1.0,
+      "us_min": 1085,
+      "us_neutral": 1500,
+      "us_max": 1895,
+      "meaning": "+1 = both eyes look up (15 deg)"
+    },
+    {
+      "id": "lid_upper_l",
+      "pca": 2,
+      "label": "左上眼皮",
+      "pose_min": -0.3,
+      "pose_max": 1.0,
+      "us_min": 1860,
+      "us_neutral": 1725,
+      "us_max": 1190,
+      "meaning": "0 = open, 1 = closed, -0.3 = wide open"
+    },
+    {
+      "id": "lid_upper_r",
+      "pca": 3,
+      "label": "右上眼皮",
+      "pose_min": -0.3,
+      "pose_max": 1.0,
+      "us_min": 1140,
+      "us_neutral": 1275,
+      "us_max": 1810,
+      "meaning": "0 = open, 1 = closed, -0.3 = wide open"
+    },
+    {
+      "id": "lid_lower",
+      "pca": 4,
+      "label": "下眼皮",
+      "pose_min": 0.0,
+      "pose_max": 1.0,
+      "us_min": 1310,
+      "us_neutral": 1310,
+      "us_max": 1650,
+      "meaning": "0 = relaxed, 1 = fully raised (both eyes)"
+    },
+    {
+      "id": "brow_l",
+      "pca": 5,
+      "label": "左眉",
+      "pose_min": -1.0,
+      "pose_max": 1.0,
+      "us_min": 1720,
+      "us_neutral": 1500,
+      "us_max": 1280,
+      "meaning": "+1 = inner end up (sad / surprised), -1 = inner end down (angry)"
+    },
+    {
+      "id": "brow_r",
+      "pca": 6,
+      "label": "右眉",
+      "pose_min": -1.0,
+      "pose_max": 1.0,
+      "us_min": 1280,
+      "us_neutral": 1500,
+      "us_max": 1720,
+      "meaning": "+1 = inner end up, -1 = inner end down"
+    },
+    {
+      "id": "jaw",
+      "pca": 7,
+      "label": "下颌",
+      "pose_min": 0.0,
+      "pose_max": 1.0,
+      "us_min": 1710,
+      "us_neutral": 1710,
+      "us_max": 1300,
+      "meaning": "0 = closed, 1 = fully open"
+    },
+    {
+      "id": "mouth_l",
+      "pca": 8,
+      "label": "左嘴角",
+      "pose_min": -1.0,
+      "pose_max": 1.0,
+      "us_min": 1250,
+      "us_neutral": 1500,
+      "us_max": 1750,
+      "meaning": "+1 = smile (corner up and out), -1 = frown"
+    },
+    {
+      "id": "mouth_r",
+      "pca": 9,
+      "label": "右嘴角",
+      "pose_min": -1.0,
+      "pose_max": 1.0,
+      "us_min": 1750,
+      "us_neutral": 1500,
+      "us_max": 1250,
+      "meaning": "+1 = smile, -1 = frown"
+    },
+    {
+      "id": "neck_yaw",
+      "pca": 10,
+      "label": "脖子左右",
+      "pose_min": -1.0,
+      "pose_max": 1.0,
+      "us_min": 1100,
+      "us_neutral": 1500,
+      "us_max": 1900,
+      "meaning": "+1 = head turns toward the robot's left (40 deg)"
+    },
+    {
+      "id": "neck_pitch",
+      "pca": 11,
+      "label": "脖子俯仰",
+      "pose_min": -1.0,
+      "pose_max": 1.0,
+      "us_min": 1300,
+      "us_neutral": 1500,
+      "us_max": 1700,
+      "meaning": "+1 = head tilts up (20 deg)"
+    }
+  ]
+}

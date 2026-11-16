@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RF-01 控制台</title>
+<link rel="stylesheet" href="css/face.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand"><span class="brand-mark" aria-hidden="true"></span>RF-01<small>机器人脸控制台</small></div>
+  <div id="hwStatus" class="pill pill-sim" role="status">未连接硬件 — 仿真模式</div>
+</header>
+
+<main class="layout">
+  <section class="stage" aria-label="仿真画面">
+    <div class="stage-canvas"><canvas id="face" aria-label="机器人脸仿真"></canvas></div>
+    <div class="stage-foot">
+      <span class="chip" id="emoNow">平静</span>
+      <span class="chip" id="gazeNow">注视：跟随指针</span>
+      <span class="chip chip-quiet" id="speakNow" hidden>正在说话</span>
+    </div>
+    <p class="stage-msg" id="stageMsg" role="status" hidden></p>
+    <video id="cam" playsinline muted hidden></video>
+  </section>
+
+  <section class="panel">
+    <nav class="tabs" role="tablist" aria-label="功能">
+      <button role="tab" class="tab is-active" data-tab="chat" aria-selected="true">对话</button>
+      <button role="tab" class="tab" data-tab="face" aria-selected="false">表情</button>
+      <button role="tab" class="tab" data-tab="cal" aria-selected="false">校准</button>
+      <button role="tab" class="tab" data-tab="link" aria-selected="false">连接</button>
+      <button role="tab" class="tab" data-tab="settings" aria-selected="false">设置</button>
+    </nav>
+
+    <!-- 对话 -->
+    <div class="page is-active" id="page-chat" role="tabpanel">
+      <div class="chatlog" id="chatLog" aria-live="polite">
+        <div class="hint" id="chatEmpty">跟它说点什么吧。回复里的表情标签会驱动这张脸，文字会被念出来并带动嘴巴。</div>
+      </div>
+      <form class="chatbar" id="chatForm" autocomplete="off">
+        <button type="button" class="btn btn-icon" id="micBtn" title="语音输入" aria-label="语音输入" aria-pressed="false">
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M12 15a3.5 3.5 0 0 0 3.5-3.5v-5a3.5 3.5 0 0 0-7 0v5A3.5 3.5 0 0 0 12 15Zm6-3.5a1 1 0 0 0-2 0 4 4 0 0 1-8 0 1 1 0 0 0-2 0 6 6 0 0 0 5 5.9V20H9a1 1 0 0 0 0 2h6a1 1 0 0 0 0-2h-2v-2.6a6 6 0 0 0 5-5.9Z"/></svg>
+        </button>
+        <input type="text" id="chatInput" placeholder="输入一句话，回车发送" aria-label="输入消息">
+        <button type="submit" class="btn btn-primary" id="sendBtn">发送</button>
+      </form>
+      <div class="row row-between chat-opts">
+        <label class="switch"><input type="checkbox" id="speakToggle" checked><span>出声朗读</span></label>
+        <button type="button" class="btn btn-quiet" id="stopBtn" hidden>停止</button>
+        <button type="button" class="btn btn-quiet" id="clearBtn">清空对话</button>
+      </div>
+    </div>
+
+    <!-- 表情 -->
+    <div class="page" id="page-face" role="tabpanel" hidden>
+      <h2>表情预设</h2>
+      <div class="emo-grid" id="emoGrid"></div>
+      <label class="field field-inline">
+        <span>强度</span>
+        <input type="range" id="emoIntensity" min="0" max="100" value="100">
+        <output id="emoIntensityOut">100%</output>
+      </label>
+      <div class="row row-between section-head">
+        <h2>逐通道手动控制</h2>
+        <label class="switch"><input type="checkbox" id="manualToggle"><span>手动</span></label>
+      </div>
+      <p class="note">打开“手动”后，下面的滑块直接决定姿态，表情、注视和眨眼都暂停。</p>
+      <div class="sliders" id="manualSliders"></div>
+      <button type="button" class="btn btn-quiet" id="manualZero">全部归零</button>
+    </div>
+
+    <!-- 校准 -->
+    <div class="page" id="page-cal" role="tabpanel" hidden>
+      <p class="note">每个通道记三个脉宽：姿态最小、中位、最大时舵机该在的位置。拖动滑块会直接驱动这一个舵机（试动），找到位置后点“取当前”。先从中位附近小幅度试，听到舵机顶住的声音立刻往回退。</p>
+      <div class="row wrap cal-actions">
+        <button type="button" class="btn" id="calSendLimits">把限位下发到设备</button>
+        <button type="button" class="btn" id="calExport">导出 JSON</button>
+        <button type="button" class="btn" id="calImportBtn">导入 JSON</button>
+        <input type="file" id="calImport" accept="application/json,.json" hidden>
+        <button type="button" class="btn btn-danger" id="calReset">恢复默认</button>
+      </div>
+      <p class="note" id="calMsg" role="status" hidden></p>
+      <div id="calList"></div>
+    </div>
+
+    <!-- 连接 -->
+    <div class="page" id="page-link" role="tabpanel" hidden>
+      <div class="row wrap">
+        <button type="button" class="btn btn-primary" id="connectBtn">连接串口</button>
+        <button type="button" class="btn btn-danger" id="releaseBtn" disabled>松开全部舵机</button>
+        <label class="switch"><input type="checkbox" id="outputToggle" checked><span>持续输出</span></label>
+      </div>
+      <p class="note" id="serialNote"></p>
+      <dl class="kv" id="linkInfo">
+        <dt>状态</dt><dd id="liState">未连接</dd>
+        <dt>固件</dt><dd id="liFw">—</dd>
+        <dt>已发帧数</dt><dd id="liSent">0</dd>
+        <dt>因拥塞跳过</dt><dd id="liSkip">0</dd>
+      </dl>
+      <div class="grid2">
+        <label class="field"><span>看门狗超时（毫秒，0 = 关闭）</span>
+          <div class="row"><input type="number" id="wdInput" min="0" max="600000" value="1000"><button type="button" class="btn" id="wdSend" disabled>设置</button></div>
+        </label>
+        <label class="field"><span>设备侧限速（微秒/秒，0 = 关闭）</span>
+          <div class="row"><input type="number" id="slewInput" min="0" max="1000000" value="0"><button type="button" class="btn" id="slewSend" disabled>设置</button></div>
+        </label>
+      </div>
+      <div class="row row-between section-head">
+        <h2>串口日志</h2>
+        <div class="row">
+          <button type="button" class="btn btn-quiet" id="limitQuery" disabled>读取限位</button>
+          <button type="button" class="btn btn-quiet" id="logClear">清空</button>
+        </div>
+      </div>
+      <pre class="log" id="serialLog" aria-live="off"></pre>
+    </div>
+
+    <!-- 设置 -->
+    <div class="page" id="page-settings" role="tabpanel" hidden>
+      <h2>大模型</h2>
+      <div class="grid2">
+        <label class="field"><span>接口类型</span>
+          <select id="setProvider">
+            <option value="anthropic">Anthropic 原生（Messages）</option>
+            <option value="openai">OpenAI 兼容（中转站、DeepSeek 等）</option>
+          </select>
+        </label>
+        <label class="field"><span>模型</span><input type="text" id="setModel" spellcheck="false"></label>
+      </div>
+      <label class="field"><span>接口地址</span><input type="url" id="setBase" spellcheck="false" placeholder="https://api.anthropic.com"></label>
+      <label class="field"><span>API Key（只保存在本机浏览器里）</span><input type="password" id="setKey" autocomplete="off" spellcheck="false"></label>
+      <label class="field"><span>人设提示词</span><textarea id="setSystem" rows="7" spellcheck="false"></textarea></label>
+      <button type="button" class="btn btn-quiet" id="setSystemReset">恢复默认提示词</button>
+
+      <h2>语音</h2>
+      <div class="grid2">
+        <label class="field"><span>朗读方式</span>
+          <select id="setTts">
+            <option value="browser">浏览器自带语音（口型按文字估算）</option>
+            <option value="api">接口合成（口型按真实音量）</option>
+          </select>
+        </label>
+        <label class="field"><span>语音识别语言</span><input type="text" id="setLang" spellcheck="false" placeholder="zh-CN"></label>
+      </div>
+      <div class="grid2" id="ttsApiBox">
+        <label class="field"><span>语音接口地址（OpenAI 兼容）</span><input type="url" id="setTtsBase" spellcheck="false" placeholder="https://api.openai.com/v1"></label>
+        <label class="field"><span>语音接口 Key（留空则用上面的 Key）</span><input type="password" id="setTtsKey" autocomplete="off" spellcheck="false"></label>
+        <label class="field"><span>语音模型</span><input type="text" id="setTtsModel" spellcheck="false" placeholder="tts-1"></label>
+        <label class="field"><span>音色</span><input type="text" id="setTtsVoice" spellcheck="false" placeholder="alloy"></label>
+      </div>
+
+      <h2>注视与摄像头</h2>
+      <label class="field"><span>眼睛看向哪里</span>
+        <select id="setCam">
+          <option value="pointer">跟随鼠标 / 手指（不需要摄像头）</option>
+          <option value="track">摄像头：看着人脸</option>
+          <option value="mirror">摄像头：模仿我的表情（镜像）</option>
+          <option value="off">不动</option>
+        </select>
+      </label>
+      <p class="note">摄像头模式首次开启时要从网络下载人脸模型（MediaPipe），画面只在本机处理，不会上传。</p>
+      <details class="adv">
+        <summary>高级：模型下载地址</summary>
+        <label class="field"><span>tasks-vision 模块</span><input type="url" id="setVisionUrl" spellcheck="false"></label>
+        <label class="field"><span>WASM 目录</span><input type="url" id="setWasmUrl" spellcheck="false"></label>
+        <label class="field"><span>face_landmarker.task</span><input type="url" id="setModelUrl" spellcheck="false"></label>
+      </details>
+      <label class="switch"><input type="checkbox" id="setIdle" checked><span>待机小动作（眨眼、眼球微动、脖子轻晃）</span></label>
+    </div>
+  </section>
+</main>
+
+<script src="js/rf-core.js"></script>
+<script src="js/rf-sim.js"></script>
+<script src="js/rf-io.js"></script>
+<script src="js/rf-app.js"></script>
+</body>
+</html>
