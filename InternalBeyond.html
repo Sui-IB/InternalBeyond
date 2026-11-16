@@ -1875,9 +1875,9 @@ body:not(.theme-infernal) .am-flag{color:#2c5590;border-color:rgba(56,102,168,0.
 .chat-msg-edit{position:absolute;top:4px;right:46px;width:16px;height:16px;border:none;background:none;color:var(--text-muted);cursor:pointer;opacity:0;padding:0;border-radius:4px;line-height:1;display:flex;align-items:center;justify-content:center;transition:opacity 0.2s,color 0.2s,background 0.2s}
 .chat-msg:hover .chat-msg-edit{opacity:0.5}.chat-msg-edit:hover{opacity:1!important;color:var(--accent-light);background:rgba(114,168,216,0.14)}.chat-msg-edit svg{width:12px;height:12px}
 body:not(.theme-infernal) .chat-msg-edit:hover{color:#2a6bb0;background:rgba(70,130,190,0.12)}
-#msgedit-dialog-overlay .group-dialog{width:400px}#msgedit-dialog-overlay .group-dialog textarea,#msgedit-dialog-overlay .group-dialog select{width:100%;padding:10px 13px;border-radius:10px;background:rgba(255,255,255,0.06);border:1px solid var(--glass-border);color:var(--text-primary);font-size:0.85rem;font-family:'Noto Sans SC',sans-serif;margin-bottom:14px;outline:none;box-sizing:border-box;-webkit-appearance:none;appearance:none;transition:border-color 0.3s,box-shadow 0.3s}
-#msgedit-dialog-overlay .group-dialog textarea{resize:vertical;min-height:130px;line-height:1.65}#msgedit-dialog-overlay .group-dialog textarea:focus,#msgedit-dialog-overlay .group-dialog select:focus{border-color:rgba(114,168,216,0.65);box-shadow:0 0 12px rgba(114,168,216,0.15)}
-body:not(.theme-infernal) #msgedit-dialog-overlay .group-dialog textarea,body:not(.theme-infernal) #msgedit-dialog-overlay .group-dialog select{background:rgba(248,252,255,0.6);border-color:rgba(170,210,245,0.35);color:#0a1e42}
+#msgedit-dialog-overlay .group-dialog{width:400px}#msgedit-dialog-overlay .group-dialog textarea,#msgedit-dialog-overlay .group-dialog select,.group-dialog #group-ctx-sel{width:100%;padding:10px 13px;border-radius:10px;background:rgba(255,255,255,0.06);border:1px solid var(--glass-border);color:var(--text-primary);font-size:0.85rem;font-family:'Noto Sans SC',sans-serif;margin-bottom:14px;outline:none;box-sizing:border-box;-webkit-appearance:none;appearance:none;transition:border-color 0.3s,box-shadow 0.3s}
+#msgedit-dialog-overlay .group-dialog textarea{resize:vertical;min-height:130px;line-height:1.65}#msgedit-dialog-overlay .group-dialog textarea:focus,#msgedit-dialog-overlay .group-dialog select:focus,.group-dialog #group-ctx-sel:focus{border-color:rgba(114,168,216,0.65);box-shadow:0 0 12px rgba(114,168,216,0.15)}
+body:not(.theme-infernal) #msgedit-dialog-overlay .group-dialog textarea,body:not(.theme-infernal) #msgedit-dialog-overlay .group-dialog select,body:not(.theme-infernal) .group-dialog #group-ctx-sel{background:rgba(248,252,255,0.6);border-color:rgba(170,210,245,0.35);color:#0a1e42}
 #msgedit-dialog-overlay .me-chips{display:flex;gap:8px;margin-bottom:14px}#msgedit-dialog-overlay .me-chip{font-size:0.78rem;padding:6px 14px;border-radius:999px;border:1px solid var(--glass-border);background:rgba(255,255,255,0.06);color:var(--text-secondary);cursor:pointer;font-family:inherit}#msgedit-dialog-overlay .me-chip.on{color:var(--accent-light);border-color:rgba(114,168,216,0.65);background:rgba(114,168,216,0.12)}
 body:not(.theme-infernal) #msgedit-dialog-overlay .me-chip{color:#1a3262;background:rgba(255,255,255,0.6);border-color:rgba(170,210,245,0.4)}body:not(.theme-infernal) #msgedit-dialog-overlay .me-chip.on{color:#17457e;border-color:rgba(80,145,205,0.6);background:rgba(90,155,235,0.18)}
 #msgedit-dialog-overlay #me-hint{font-size:0.72rem;color:var(--text-muted);margin:-4px 0 12px;line-height:1.6}#msgedit-dialog-overlay #me-day{opacity:0.7;margin-left:6px}#msgedit-dialog-overlay.edit .me-add{display:none}
@@ -7802,8 +7802,9 @@ i would like the room to be enough.
     <label>群公告</label>
     <textarea id="group-notice-input" rows="3" maxlength="2000" placeholder="群的背景设定、话题或相处规则…（写进每位成员的系统提示；留空则不注入）" style="width:100%;box-sizing:border-box;padding:8px 12px;border-radius:10px;border:1px solid var(--glass-border);background:rgba(255,255,255,0.06);color:var(--text-primary);font-size:0.85rem;font-family:inherit;line-height:1.6;resize:vertical;min-height:58px;outline:none;margin-bottom:10px"></textarea>
     <label>上下文条数</label>
-    <input type="text" id="group-ctx-input" inputmode="numeric" placeholder="例如 30" oninput="this.value=this.value.replace(/\D/g,'').slice(0,3)">
-    <div style="font-size:0.68rem;color:var(--text-muted);margin:2px 0 10px;line-height:1.6">每次发送时携带的最近消息数，全群共用。留空则按 30 条。</div>
+    <select id="group-ctx-sel" onchange="_grpCtxSelD()"><option value="5">最近 5 条</option><option value="10">最近 10 条</option><option value="20">最近 20 条</option><option value="30">最近 30 条（默认）</option><option value="40">最近 40 条</option><option value="50">最近 50 条</option><option value="999">999 条（上限）</option><option value="custom">自定义…</option></select><!-- v200：和一对一「上下文消息条数」同一套选法；群的默认仍是 30 -->
+    <input type="text" id="group-ctx-input" inputmode="numeric" placeholder="输入条数（1–9999）" style="display:none;margin-top:-6px" oninput="this.value=this.value.replace(/\D/g,'').slice(0,4)">
+    <div style="font-size:0.68rem;color:var(--text-muted);margin:2px 0 10px;line-height:1.6">每次发送时携带的最近消息数，全群共用。</div>
     <label>选择API成员（至少2个）</label>
     <div style="font-size:0.68rem;color:var(--text-muted);margin-bottom:8px;line-height:1.5">勾选顺序即为群聊发言顺序</div>
     <div class="group-api-list" id="group-api-list"></div>
@@ -11028,7 +11029,7 @@ function createGroup(){
   document.getElementById('group-dialog-confirm').textContent='创建';
   document.getElementById('group-rename-hint').style.display='none';
   document.getElementById('group-name-input').value='';
-  document.getElementById('group-notice-input').value='';/* v71：群公告 */document.getElementById('group-ctx-input').value='30';/* v156：新群默认 30 条（与手机端同） */
+  document.getElementById('group-notice-input').value='';/* v71：群公告 */_grpCtxShowD(null);/* v156：新群默认 30 条（与手机端同） */
   document.getElementById('group-memory-toggle').checked=false;/* BUGFIX: 原先只重置思考链开关，记忆开关会残留上次的勾选 */
   document.getElementById('group-thinking-toggle').checked=false;
   document.getElementById('group-director-toggle').checked=false;document.getElementById('group-shuffle-toggle').checked=false;/* v98 */
@@ -11061,7 +11062,7 @@ async function openGroupManage(){
     if(idx>=0){badge.textContent=idx+1;badge.style.display=''}else{badge.style.display='none'}
   });
   document.getElementById('group-name-input').value=group.name||'';
-  document.getElementById('group-notice-input').value=group.notice||'';/* v71：群公告 */document.getElementById('group-ctx-input').value=(parseInt(group.ctxLimit,10)>0)?String(parseInt(group.ctxLimit,10)):'';/* v156 */
+  document.getElementById('group-notice-input').value=group.notice||'';/* v71：群公告 */_grpCtxShowD(group);/* v156 */
   document.getElementById('group-memory-toggle').checked=!!group.memoryEnabled;
   document.getElementById('group-thinking-toggle').checked=!!group.thinkingEnabled;
   document.getElementById('group-director-toggle').checked=!!group.director;document.getElementById('group-shuffle-toggle').checked=!!group.shuffle;/* v98 */
@@ -16306,7 +16307,11 @@ async function updateDangerStorageInfo(){
   const el=document.getElementById('danger-total-size');if(el)el.textContent=_fmtB(grandTotal);
   const bar=document.getElementById('danger-total-bar');if(bar){const p=Math.min(100,grandTotal/52428800*100);bar.style.width=Math.max(1,p).toFixed(1)+'%'}
 }
-function _grpCtxValD(){var el=document.getElementById('group-ctx-input');var v=parseInt(el&&el.value,10)||0;return v>0?Math.min(999,v):0}/* v156：群聊管理里填的上下文条数；空＝0＝沿用原来的统一设置 */
+function _grpCtxValD(){var s=document.getElementById('group-ctx-sel'),i=document.getElementById('group-ctx-input');if(s&&s.value!=='custom')return parseInt(s.value,10)||30;var v=parseInt(i&&i.value,10);if(isNaN(v))return 30;return Math.min(9999,Math.max(1,v))}/* v200：群聊管理里的上下文条数改成和一对一同一套（下拉 + 自定义 1–9999）；原来是一个最多三位数的输入框 */
+function _grpCtxSelD(){var s=document.getElementById('group-ctx-sel'),i=document.getElementById('group-ctx-input');if(i)i.style.display=(s&&s.value==='custom')?'':'none';if(s&&s.value==='custom'&&i&&!i.value)i.focus()}
+function _grpCtxPutD(v){var s=document.getElementById('group-ctx-sel'),i=document.getElementById('group-ctx-input');if(!s||!i)return;v=parseInt(v,10)||30;var has=[].some.call(s.options,function(o){return o.value===String(v)});if(has){s.value=String(v);i.style.display='none';i.value=''}else{s.value='custom';i.style.display='';i.value=String(v)}}
+function _grpCtxShowD(group){var t=window._grpCtxTok=(window._grpCtxTok||0)+1,k=parseInt(group&&group.ctxLimit,10)||0;if(!group||k>0){_grpCtxPutD(k>0?k:30);return}_grpCtxPutD(30);/* 老群没存过条数：照实际在用的那个数显示（成员旧设置里最大的，都没有 30），读到了再换上 */
+  _ibMpGetD().then(function(mp){if(t===window._grpCtxTok)_grpCtxPutD(_grpKeepOfD(group,mp))}).catch(function(){})}/* v156：群聊管理里填的上下文条数；空＝0＝沿用原来的统一设置 */
 async function _ibMpGetD(){try{var r=await dbGet('apiSettings','mobilePrefs');return (r&&typeof r==='object')?r:null}catch(e){return null}}/* v159：手机端按 TA 各存的那份设置；电脑端只动其中读取范围三项 */
 function _grpKeepOfD(g,mp){
   var v=parseInt(g&&g.ctxLimit,10)||0;if(v>0)return v;var mx=0;try{((g&&g.members)||[]).forEach(function(id){var o=mp&&mp.perAi&&mp.perAi[id];var n=o?(parseInt(o.grpLimit,10)||0):0;if(n>mx)mx=n})}catch(e){}return mx>0?Math.min(100,mx):30}
