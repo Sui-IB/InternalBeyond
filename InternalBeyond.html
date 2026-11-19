@@ -10190,7 +10190,7 @@ function _ibRenderGuardPanel(){
     var p4=document.getElementById('ib-fs-state'),p4b=document.getElementById('ib-fs-btns');
     if(p4&&p4b){
       var fsm=null;try{fsm=JSON.parse(localStorage.getItem('ib_fsSyncMeta')||'null')}catch(e){}
-      var lastTxt=fsm?(' · 上次 '+new Date(fsm.ts).toLocaleString('zh-CN',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})):'';
+      var lastTxt=fsm?(' · 上次 '+(function(d){return (d.getFullYear()!==new Date().getFullYear()?d.getFullYear()+'年':'')+d.toLocaleString('zh-CN',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})})(new Date(fsm.ts))):'';
       var bSmall='class="btn" style="padding:3px 14px;font-size:0.75rem"';
       if(_ibFsState==='unsupported'){p4.textContent='当前浏览器不支持（需要桌面版 Edge / Chrome）';p4b.innerHTML=''}
       else if(_ibFsState==='unbound'){p4.textContent='未绑定';p4b.innerHTML='<button '+bSmall+' onclick="_ibFsBind()">绑定文件夹</button>'}
@@ -10552,7 +10552,7 @@ function _tkDay0(t){var d=new Date(t);d.setHours(0,0,0,0);return d.getTime()}
 function _tkAddD(t,n){var d=new Date(t);d.setDate(d.getDate()+n);d.setHours(0,0,0,0);return d.getTime()}
 function _tkRangeT0(){return _tkT0}
 function _tkRangeT1x(){return _tkAddD(_tkT1,1)}/* 结束日次日零点（开区间上界），跨夏令时安全 */
-function _tkFmtD(t){var d=new Date(t);return (d.getMonth()+1)+'/'+d.getDate()}
+function _tkFmtD(t){var d=new Date(t);return (d.getFullYear()!==new Date().getFullYear()?d.getFullYear()+'/':'')+(d.getMonth()+1)+'/'+d.getDate()}
 function _tkRangeLabel(){if(_tkT0===_tkT1)return _tkT0===_tkDay0(Date.now())?'今日':_tkFmtD(_tkT0);return _tkFmtD(_tkT0)+' — '+_tkFmtD(_tkT1)}
 function _tkRangeTextSync(){var el=document.getElementById('tk-range-text');if(el)el.textContent=_tkRangeLabel()}
 /* ── 日历弹层：第一次点选起始日，第二次点选结束日（自动纠正先后），点同一天即单日 ── */
@@ -10663,7 +10663,7 @@ async function renderTokenDash(){
   recs.slice().reverse().forEach(function(r){/* 完整展示当前时间段内的全部明细（原先截断为最近40条） */
     const c=_tkCost(r,d.prices[r.m]);const tmd=new Date(r.t);
     const hh=('0'+tmd.getHours()).slice(-2)+':'+('0'+tmd.getMinutes()).slice(-2);
-    const dd=(now-r.t)>864e5?((tmd.getMonth()+1)+'/'+tmd.getDate()+' '):'';
+    const dd=(now-r.t)>864e5?((tmd.getFullYear()!==new Date().getFullYear()?tmd.getFullYear()+'/':'')+(tmd.getMonth()+1)+'/'+tmd.getDate()+' '):'';
     h+='<div class="tk-ex"><span class="t">'+dd+hh+'</span><span class="m">'+_tkEsc(r.m)+'</span><span class="d">输入 '+_tkFmt(r.i+r.cw)+'（缓存 '+_tkFmt(r.cr)+'）· 输出 '+_tkFmt(r.o)+'</span><span class="c">'+(c==null?'&mdash;':'$'+c.toFixed(3))+'</span></div>';
   });
   h+='</div>';
@@ -11327,6 +11327,7 @@ async function selectThread(friendId,threadId){
   setTimeout(()=>autoSummaryOnOpen(friendId,threadId),300);
 }
 
+function _srchWhenD(ts){var d=new Date(ts||0);if(isNaN(d))return '';var p=function(n){return (n<10?'0':'')+n};return (d.getFullYear()!==new Date().getFullYear()?d.getFullYear()+'年':'')+(d.getMonth()+1)+'月'+d.getDate()+'日 '+p(d.getHours())+':'+p(d.getMinutes())}
 function searchChat(q){
   if(!q){
     if(_chatArchMode){
@@ -11348,7 +11349,7 @@ function searchChat(q){
     container.innerHTML=results.slice(0,50).map(m=>{
       const isUser=m.role==='user';
       const sName=isUser?(_cachedUserName||'You'):(_msgSnD(m)||_getActiveAiName()||'AI');
-      const t=m.timestamp?new Date(m.timestamp).toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit',second:'2-digit'}):'';
+      const t=m.timestamp?_srchWhenD(m.timestamp):'';
       return '<div class="chat-msg '+(isUser?'user':'ai')+'">'
         +'<div class="r-head">'+esc(sName)+(t?'<span class="r-time">'+t+'</span>':'')+'</div>'
         +'<div class="r-text">'+esc(m.content)+'</div>'
@@ -16426,7 +16427,7 @@ async function renderSummaryMgmt(){
         const cfg=apiConfigs.find(a=>a.id===s.friendId)||archivedConfigs.find(a=>a.id===s.friendId);name=cfg?((cfg.nickname||cfg.model||'未命名')+(cfg.archived?'（已归档）':'')):'（已删除）';kind='';
       }
       if(s.threadId)kind=kind?kind+' · 频道':'频道';
-      const date=s.updated?new Date(s.updated).toLocaleString('zh-CN',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}):'';
+      const date=s.updated?(function(d){return (d.getFullYear()!==new Date().getFullYear()?d.getFullYear()+'年':'')+d.toLocaleString('zh-CN',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})})(new Date(s.updated)):'';
       const charCount=s.summary?s.summary.length:0;
       const author=s.authorName||s.authorInfo||'未记录';
       return '<div class="glass-card sum-mgmt-card" onclick="toggleSummaryDetail(this)">'
@@ -16609,7 +16610,7 @@ var _welcomeSent=false;
 var _pageHiddenAt=0;/* 记录页面切到后台的时刻 */
 function _updateLastActive(){_lastActiveTime=Date.now();try{localStorage.setItem('ib_lastActive',String(_lastActiveTime))}catch(e){}}
 function _formatTime(ts){return new Date(ts).toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'})}
-function _formatDate(ts){return new Date(ts).toLocaleDateString('zh-CN',{month:'short',day:'numeric'})}
+function _formatDate(ts){/* v205：只给离开时长那句用（给 TA 看），日期一律带年 */var d=new Date(ts),p=function(n){return (n<10?'0':'')+n};return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())}
 function _isSameDay(a,b){var d1=new Date(a),d2=new Date(b);return d1.getFullYear()===d2.getFullYear()&&d1.getMonth()===d2.getMonth()&&d1.getDate()===d2.getDate()}
 async function _checkWelcomeBack(lastActiveOverride){
   if(_welcomeSent)return;
@@ -16843,6 +16844,7 @@ function _bpAgo(ts){
   if(d<7*86400000)return Math.floor(d/86400000)+' 天前';
   var t=new Date(ts);{var _d0=new Date(t);var _yy=(_d0.getFullYear()!==new Date().getFullYear())?(_d0.getFullYear()+'年'):'';return _yy+ (t.getMonth()+1)+'月'+t.getDate()+'日';}
 }
+function _bpAgoTA(ts){if(Date.now()-(ts||0)<7*86400000)return _bpAgo(ts);var t=new Date(ts||0),p=function(n){return (n<10?'0':'')+n};return t.getFullYear()+'-'+p(t.getMonth()+1)+'-'+p(t.getDate())}
 var _bpHideT=null,_bpTab='feed',_bpQ='',_bpQT=null,_bpCinOpen='',_bpFrdIdx=0,_bpEditFid='',_bpMe=null,_bpPageN=1,_bpPageF=1,_bpPageA=1,_bpAnimNext=false;/* v82 r3：+社交圈页分页 */var _BP_PAGE=30;
 function ibfOpenPanel(){
   var p=document.getElementById('beyond-panel');if(!p)return;
@@ -17828,7 +17830,7 @@ async function _ibBeyondListingD(fid,n,imgSink,one){
     var _pim=(p.imgs&&p.imgs.length)?p.imgs.slice(0,3):(p.img?[p.img]:[]);var _itag='';
     for(var _k=0;_k<_pim.length;_k++){var _u=_pim[_k];_itag+=(imgSink&&isU&&typeof _u==='string'&&_u.slice(0,5)==='data:'&&imgSink.length<4)?('[图'+imgSink.push(_u)+']'):'[图]'}
     var tx=String(p.text||'').replace(/\u200b/g,'').replace(/\r\n?/g,'\n').replace(/[ \t]+\n/g,'\n').replace(/\n{3,}/g,'\n\n').trim();if(tx.length>TXT)tx=tx.slice(0,TXT)+'…（正文超长，已截）';
-    var l='#'+p.id+'｜'+nm+'｜'+_bpAgo(p.ts||0)+(p.vis==='user'?'｜仅用户可见':(p.vis&&p.vis!=='all'?'｜部分可见':''))+(p.loc?'｜[定位]':'')+(_itag?'｜'+_itag:'')+'\n'+tx;
+    var l='#'+p.id+'｜'+nm+'｜'+_bpAgoTA(p.ts||0)+(p.vis==='user'?'｜仅用户可见':(p.vis&&p.vis!=='all'?'｜部分可见':''))+(p.loc?'｜[定位]':'')+(_itag?'｜'+_itag:'')+'\n'+tx;
     var cms=p.comments||[],tail=cms.slice(-CM);
     if(cms.length>tail.length)l+='\n └（更早的 '+(cms.length-tail.length)+' 条评论略）';
     tail.forEach(function(cm){
@@ -17983,7 +17985,7 @@ async function _ibMemSourceExecD(cfg,op){
   all=all.filter(function(x){return x&&(x.threadId||null)===th&&!x.callEnd&&String(x.content||'').trim()}).sort(function(a,b){return (a.timestamp||0)-(b.timestamp||0)});
   var ix=all.findIndex(function(x){return x.id===src.id}),n=Math.max(2,Math.min(12,parseInt(op&&op.n,10)||6)),seg=ix>=0?all.slice(Math.max(0,ix-n),ix+n+1):[src];
   var seal=0;try{seal=await getChatSealTimestamp(conv,th)}catch(e){}
-  var uN=(typeof _cachedUserName==='string'&&_cachedUserName)||'对方',fmt=function(ts){var d=new Date(ts||0),p2=function(v){return v<10?'0'+v:''+v};return (d.getMonth()+1)+'月'+d.getDate()+'日 '+p2(d.getHours())+':'+p2(d.getMinutes())};
+  var uN=(typeof _cachedUserName==='string'&&_cachedUserName)||'对方',fmt=function(ts){var d=new Date(ts||0),p2=function(v){return v<10?'0'+v:''+v};return d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate())+' '+p2(d.getHours())+':'+p2(d.getMinutes())};/* v205：给 TA 的时间一律带年（翻的常是旧记忆） */
   var used=0,lines=[];
   seg.forEach(function(x){if(used>9000)return;var who=x.role==='user'?uN:((String(x.senderId||x.friendId||'')===String(fid))?'你':(x.senderName||'别人'));var tx=String(x.content||'').replace(/<thinking>[\s\S]*?<\/thinking>/gi,'').replace(/<ws_[a-z_]+\b[^>]*>[\s\S]*?<\/ws_[a-z_]+>|<ws_[a-z_]+\b[^>]*\/?>/g,'').replace(/\s+/g,' ').trim().slice(0,500);if(!tx)return;var l='· '+fmt(x.timestamp)+' '+who+'：'+tx;lines.push(l);used+=l.length});
   if(!lines.length)return bad('翻出处 ·「'+title.slice(0,20)+'」· 没有可读的文字','出处那一段没有可读的文字。');
@@ -19530,7 +19532,7 @@ const IBDIY = {
       list.innerHTML = '<div style="font-size:0.78rem;opacity:0.45;padding:8px 0">暂无推送。后端连接成功并发来消息后会显示在这里。</div>';
       return;
     }
-    const fmt = t => { const d = new Date(t); const p = n => (n < 10 ? '0' : '') + n; return p(d.getMonth() + 1) + '-' + p(d.getDate()) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes()); };
+    const fmt = t => { const d = new Date(t); const p = n => (n < 10 ? '0' : '') + n; return (d.getFullYear() !== new Date().getFullYear() ? d.getFullYear() + '-' : '') + p(d.getMonth() + 1) + '-' + p(d.getDate()) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes()); };
     list.innerHTML = a.slice(0, 8).map(m =>
       '<div style="border-top:1px solid var(--glass-border);padding:8px 2px;font-size:0.8rem;line-height:1.7">' +
       '<span style="opacity:0.5;font-size:0.72rem">' + fmt(m.time) + '</span>' +
@@ -23202,7 +23204,7 @@ async function renderWsProjects(){
       +'<span class="ws-proj-icon">'+WS_ICON.folder+'</span>'
       +'<div class="ws-proj-info">'
       +'<div class="ws-proj-name-row"><span class="ws-proj-name" id="wspn-'+p.id+'">'+esc(p.name)+'</span>'+(isDef?'<span class="ws-proj-tag">默认</span>':(isUsr?'<span class="ws-proj-tag">上传</span>':''))+'</div>'
-      +'<div class="ws-proj-meta">'+files.length+' 个文件 · '+_fmtFileSize(totalSize)+' · 更新于 '+new Date(p.lastModified||p.created).toLocaleString('zh-CN',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})+'</div>'
+      +'<div class="ws-proj-meta">'+files.length+' 个文件 · '+_fmtFileSize(totalSize)+' · 更新于 '+(function(d){return (d.getFullYear()!==new Date().getFullYear()?d.getFullYear()+'年':'')+d.toLocaleString('zh-CN',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})})(new Date(p.lastModified||p.created))+'</div>'
       +'</div>'
       +((isDef||isUsr)?'':'<div class="ws-card-actions">'
       +'<button class="ws-icon-btn" title="重命名" onclick="event.stopPropagation();_wsInlineRename(\''+p.id+'\',document.getElementById(\'wspn-'+p.id+'\'))">'+WS_ICON.rename+'</button>'
@@ -23236,7 +23238,7 @@ async function renderWsFiles(projId){
     html+='<div class="ws-file-row" id="wsf-'+f.id+'" draggable="true" ondragstart="wsFileDragStart(event,this,\''+f.id+'\')" title="拖到聊天窗口可作为附件发送">'
       +'<div class="ws-file-icon">'+WS_ICON.file+'</div>'
       +'<div class="ws-file-info"><div class="ws-file-name">'+esc(f.path)+'</div>'
-      +'<div class="ws-file-meta">'+_fmtFileSize(f.size||0)+' · '+esc((f.lastModifiedBy==='你'?'User':f.lastModifiedBy)||'AI')+' · '+new Date(f.lastModified).toLocaleString('zh-CN',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})+'</div></div>'
+      +'<div class="ws-file-meta">'+_fmtFileSize(f.size||0)+' · '+esc((f.lastModifiedBy==='你'?'User':f.lastModifiedBy)||'AI')+' · '+(function(d){return (d.getFullYear()!==new Date().getFullYear()?d.getFullYear()+'年':'')+d.toLocaleString('zh-CN',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})})(new Date(f.lastModified))+'</div></div>'
       +'<div class="ws-file-actions">'
       +'<button class="ws-file-btn" onclick="wsTogglePreview(\''+f.id+'\')">预览</button>'
       +(/\.(py|mjs|js)$/i.test(f.path)?'<button class="ws-file-btn" onclick="wsRunFileFromUI(\''+f.id+'\')">运行</button>':'')
@@ -24325,7 +24327,7 @@ async function _memSrcShowD(id){/* 看出处：这条记忆写下时依据的那
   all=(all||[]).filter(function(x){return x&&(x.threadId||null)===th&&!x.callEnd&&String(x.content||'').trim()}).sort(function(a,b){return (a.timestamp||0)-(b.timestamp||0)});
   var ix=all.findIndex(function(x){return x.id===src.id}),seg=ix>=0?all.slice(Math.max(0,ix-2),ix+3):[src];
   var uN=(typeof _cachedUserName==='string'&&_cachedUserName)||'我',fc=(apiConfigs||[]).concat(typeof archivedConfigs!=='undefined'&&Array.isArray(archivedConfigs)?archivedConfigs:[]).filter(function(c){return c&&c.id===src.friendId})[0],fN=fc?(fc.nickname||fc.model||'TA'):'TA';
-  var lines=seg.map(function(x){var d=new Date(x.timestamp||0),p2=function(v){return v<10?'0'+v:''+v},tt=(d.getMonth()+1)+'月'+d.getDate()+'日 '+p2(d.getHours())+':'+p2(d.getMinutes()),who=x.role==='user'?uN:(_msgSnD(x)||fN);
+  var lines=seg.map(function(x){var d=new Date(x.timestamp||0),p2=function(v){return v<10?'0'+v:''+v},tt=(d.getFullYear()!==new Date().getFullYear()?d.getFullYear()+'年':'')+(d.getMonth()+1)+'月'+d.getDate()+'日 '+p2(d.getHours())+':'+p2(d.getMinutes()),who=x.role==='user'?uN:(_msgSnD(x)||fN);
     return (x.id===src.id?'▸ ':'')+tt+' · '+who+'\n'+String(x.content||'').replace(/<ws_[a-z_]+\b[^>]*>[\s\S]*?<\/ws_[a-z_]+>|<ws_[a-z_]+\b[^>]*\/?>/g,'').replace(/\s+/g,' ').trim().slice(0,220)}).join('\n\n');
   var go=await ibConfirmX('出处 · '+String(m.title||'（无标题）').slice(0,24)+'\n\n'+lines,'去会话');
   if(go){try{closeMemoryModal()}catch(e){}try{navTo('chat')}catch(e){}try{await selectFriend(src.friendId)}catch(e){}}}
@@ -24808,7 +24810,7 @@ async function renderMemories(){
           /* 标签 */
           var labelText='',labelKey='';
           if(sortMode==='created'){
-            labelKey=(d.getMonth()+1)+'.'+d.getDate();
+            labelKey=(d.getFullYear()!==new Date().getFullYear()?d.getFullYear()+'.':'')+(d.getMonth()+1)+'.'+d.getDate();
             labelText=labelKey;
           }else if(sortMode==='score'){
             if(!m.pinned){var scv=getMemoryScore(m);labelKey=String(scv);labelText=scv}
@@ -25624,7 +25626,7 @@ async function _injectSealDivider(container,msgs){
   const label=document.createElement('span');
   label.className='chat-seal-label';
   const sealDate=new Date(sealTs);
-  label.textContent='封档线 · '+sealDate.toLocaleDateString('zh-CN',{month:'short',day:'numeric'})+'  '+sealDate.toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});
+  label.textContent='封档线 · '+(sealDate.getFullYear()!==new Date().getFullYear()?sealDate.getFullYear()+'年':'')+sealDate.toLocaleDateString('zh-CN',{month:'short',day:'numeric'})+'  '+sealDate.toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});
   divider.appendChild(label);
   insertAfterEl.insertAdjacentElement('afterend',divider);
 }
@@ -27473,7 +27475,7 @@ async function openCalendar(tab){
 
 var CAL_TAIL_HEAD='【备忘日历｜〔未提及〕= 可自然提一句，提过即止；〔可留笺〕= 可附便笺】';
 var CAL_PERIOD_INSTR='【生理期】带「生理期」的条目是 TA 的私密信息，只在临近或进行中出现。不用刻意说起这件事，根据话题节奏自然提及，也别每次都关心一遍。TA 感到不舒服、没精神、心情不好时，像了解 TA 的人那样自然回应与关心——该心疼就心疼，可以给常识型的建议，不要替 TA 下论断。日期是按周期算的，以 TA 自己说的为准。';/* v57 ⑤：与手机端同文 */
-function _periodInfoD(it,t){try{var b=itemDate(it);if(!b)return null;var cy=Math.max(15,Math.min(90,parseInt(it.cycle)||28)),pd=Math.max(1,Math.min(14,parseInt(it.pdays)||5));var diff=diffD(b,t);var r={cy:cy,pd:pd};if(diff<0){r.phase='pre';r.du=-diff;r.next=b}else{var k=diff%cy;if(k<pd){r.phase='in';r.day=k+1;r.left=pd-k-1}else{r.phase='pre';r.du=cy-k;r.next=new Date(t.getFullYear(),t.getMonth(),t.getDate()+(cy-k))}}if(r.next)r.nextStr=(r.next.getMonth()+1)+'月'+r.next.getDate()+'日';return r}catch(e){return null}}
+function _periodInfoD(it,t){try{var b=itemDate(it);if(!b)return null;var cy=Math.max(15,Math.min(90,parseInt(it.cycle)||28)),pd=Math.max(1,Math.min(14,parseInt(it.pdays)||5));var diff=diffD(b,t);var r={cy:cy,pd:pd};if(diff<0){r.phase='pre';r.du=-diff;r.next=b}else{var k=diff%cy;if(k<pd){r.phase='in';r.day=k+1;r.left=pd-k-1}else{r.phase='pre';r.du=cy-k;r.next=new Date(t.getFullYear(),t.getMonth(),t.getDate()+(cy-k))}}if(r.next){r.nextStr=(r.next.getMonth()+1)+'月'+r.next.getDate()+'日';r.nextIso=isoOf(r.next)}/* v205：nextIso 给 TA 用（带年），nextStr 留给界面 */return r}catch(e){return null}}
 var CAL_NOTE_INSTR='【便笺】当日历中某事项或者节日标有〔可留笺〕且你想为它留一张便笺时，在回复末尾追加：\n<cal_note item="事项标题">30–150 字正文</cal_note>\n便笺会出现在对方的日历留言页，界面自动署名并标时间；正文不要写称呼、署名或日期。\n每条事项每次日期至多一张。';
 function _calToday(){var n=new Date();return new Date(n.getFullYear(),n.getMonth(),n.getDate())}
 function ledKey(itemId,occIso,aid){return itemId+'|'+occIso+'|'+aid}
@@ -27486,7 +27488,7 @@ function repCN(it){
   if(it.repeat==='daily')return ' · 每天';
   return '';
 }
-function mdCN(iso,withYear){var a=String(iso||'').split('-');return (withYear?(+a[0])+'年':'')+(+a[1])+'月'+(+a[2])+'日'}
+function mdCN(iso,withYear){/* v205：日程给 TA 一律写年-月-日（只有 tailDateText 用它） */var a=String(iso||'').split('-');return a.length===3?(a[0]+'-'+('0'+(+a[1])).slice(-2)+'-'+('0'+(+a[2])).slice(-2)):String(iso||'')}
 function kindCN(it){return {anniv:'纪念日',birthday:'生日',plan:'计划',memo:'记录',period:'生理期'}[it&&it.kind]||'事项'}/* v57 ⑤ */
 function tailDateText(it,occ){
   var e=itemEndDate(it),end=e?isoOf(e):'',sy=String(it.date||'').split('-')[0],oy=String(occ||'').split('-')[0],ey=String(end||'').split('-')[0];
@@ -27508,9 +27510,9 @@ async function buildTail(cfg){
   await ensureData();
   var p=perm(cfg.id),rd=ALLOW_NOTES&&!!p[0],nt=ALLOW_NOTES&&!!p[1];/* 读取、留言、相遇提醒各管各的；节日提醒开着时所有 AI 都收到，不看读取与总开关（用户定）；总开关只管读取与留言 */
   var t=_calToday(),rows=[],pLines=[];
-  for(var q=0;rd&&q<ITEMS.length;q++){var pit=ITEMS[q];if(!pit||pit.kind!=='period'||!pit.remind||!visibleTo(pit,cfg.id))continue;var pi=_periodInfoD(pit,t);if(!pi)continue;var plead=(pit.lead!=null?pit.lead:LEAD);var bs=String(pit.date||'').split('-'),bt=bs.length===3?((+bs[1])+'月'+(+bs[2])+'日'):String(pit.date||'');var nt=pit.note?' 备注：'+pit.note:'';
+  for(var q=0;rd&&q<ITEMS.length;q++){var pit=ITEMS[q];if(!pit||pit.kind!=='period'||!pit.remind||!visibleTo(pit,cfg.id))continue;var pi=_periodInfoD(pit,t);if(!pi)continue;var plead=(pit.lead!=null?pit.lead:LEAD);var bs=String(pit.date||'').split('-'),bt=String(pit.date||'');var nt=pit.note?' 备注：'+pit.note:'';
     if(pi.phase==='in')pLines.push('· 生理期：'+(pit.title||'生理期')+' — 今天是第 '+pi.day+' 天'+(pi.left>0?('，预计还有 '+pi.left+' 天结束'):'，预计今天结束')+'（按上次 '+bt+' 开始、周期 '+pi.cy+' 天推算）'+nt);
-    else if(pi.du<=plead)pLines.push('· 生理期：'+(pit.title||'生理期')+' — 预计 '+pi.du+' 天后开始（'+pi.nextStr+'；按周期 '+pi.cy+' 天推算，经期约 '+pi.pd+' 天）'+nt)}/* v57 ⑤：生理期单独成行，不走台账与便笺标 */
+    else if(pi.du<=plead)pLines.push('· 生理期：'+(pit.title||'生理期')+' — 预计 '+pi.du+' 天后开始（'+(pi.nextIso||pi.nextStr)+'；按周期 '+pi.cy+' 天推算，经期约 '+pi.pd+' 天）'+nt)}/* v57 ⑤：生理期单独成行，不走台账与便笺标 */
   for(var i=0;rd&&i<ITEMS.length;i++){
     var it=ITEMS[i];
     if(!it.title||!it.remind||!visibleTo(it,cfg.id))continue;
@@ -27533,7 +27535,7 @@ async function buildTail(cfg){
   var lines=[CAL_TAIL_HEAD];
   for(var j=0;j<rows.length;j++){
     var r=rows[j],seg=(r.show||r.occ).split('-'),mark='',when=(r.du===0?'今天':(r.du<0?'昨天':'还有 '+r.du+' 天'));/* v85：相遇纪念的后一天 */
-    if(r.meet){lines.push('· '+r.meet+' — '+when+'（'+(+seg[1])+'月'+(+seg[2])+'日 · 相遇纪念，系统按相遇日期算的）');continue}/* v83 */
+    if(r.meet){lines.push('· '+r.meet+' — '+when+'（'+String(r.occ)+' · 相遇纪念，系统按相遇日期算的）');continue}/* v83 */
     if(r.hol){
       var hk=ledKey('hol:'+r.hol,r.occ,cfg.id),hled=(await ledGet(hk))||{id:hk,mentioned:0,shown:0,noted:0};
       if(!hled.mentioned){
@@ -27541,7 +27543,7 @@ async function buildTail(cfg){
         else{mark='〔未提及〕';hled.shown=(hled.shown|0)+1;ledPut(hled)}
       }
       if(nt&&!hled.noted)mark+='〔可留笺〕';
-      lines.push('· '+r.hol+' — '+when+'（'+(+seg[1])+'月'+(+seg[2])+'日 · 节日）'+mark);
+      lines.push('· '+r.hol+' — '+when+'（'+String(r.occ)+' · 节日）'+mark);
       continue;
     }
     var it=r.it;
@@ -28858,7 +28860,7 @@ var Q_ICON='<svg viewBox="0 0 24 24"><path d="M9 7H6a2 2 0 0 0-2 2v3a2 2 0 0 0 2
 function $(id){return document.getElementById(id)}
 function esc2(t){return String(t==null?'':t).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
 function timeStr(ts){var d=new Date(ts||Date.now());return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')}
-function dateStr(ts){var d=new Date(ts);return (d.getMonth()+1)+'/'+d.getDate()}
+function dateStr(ts){var d=new Date(ts);return (d.getFullYear()!==new Date().getFullYear()?d.getFullYear()+'/':'')+(d.getMonth()+1)+'/'+d.getDate()}
 function pct(v){return Math.round((v||0)*100)+'%'}
 IBApps.register({id:'coread',name:'学习室',version:'2.1.0',sdk:2,builtin:true,mount:function(h,c){ctx=c;
   c.on('page',function(d){if(S.on&&d.to!=='blog')exit(true)});
@@ -31848,7 +31850,7 @@ function core(mems,fid,isGroup,gme,userMsg,opt){opt=opt||{};var now=Date.now();
   if(!lines.length)return done('',amBlock);
   return done('【想起的回忆（仅你可见）】用得上就自然用进对话，用不上就当没想起；不要复述。和眼前对话对不上时，以对话为准。\n'+lines.join('\n'),amBlock)}
 function dShort(s){s=String(s||'');return (s.length===10&&s.slice(0,4)===String(new Date().getFullYear()))?s.slice(5):s}
-function covLine(L){var ms=(L.miles||[]).slice(-2).map(function(x){return String(x.t||'')+'('+dShort(x.d)+')'}).join('；'),th=String(L.theme||'').replace(/\s+/g,' ').trim();return '- [回忆起的脉络 · 以下记忆所属的长期线索]《'+String(L.title||'')+'》（共 '+((L.members||[]).length)+' 页）：'+(th?(th.replace(/[。.]$/,'')+'。'):'')+String(L.cover||'').replace(/\s+/g,' ').trim()+(ms?' ｜其中：'+ms:'')}/* 手机端 v391：带「这条线关于什么」 */
+function covLine(L){/* v205：给 TA 的里程碑日期写全（年-月-日）；面板上照旧用 dShort */var ms=(L.miles||[]).slice(-2).map(function(x){return String(x.t||'')+'('+String(x.d||'')+')'}).join('；'),th=String(L.theme||'').replace(/\s+/g,' ').trim();return '- [回忆起的脉络 · 以下记忆所属的长期线索]《'+String(L.title||'')+'》（共 '+((L.members||[]).length)+' 页）：'+(th?(th.replace(/[。.]$/,'')+'。'):'')+String(L.cover||'').replace(/\s+/g,' ').trim()+(ms?' ｜其中：'+ms:'')}/* 手机端 v391：带「这条线关于什么」 */
 function build(mems,fid,isGroup,gme,userMsg,opt){opt=opt||{};
   if(opt.fam==null){try{if(window.IBLine&&IBLine.fam)opt.fam=IBLine.fam()}catch(e){}}/* 脉络目录快照（没有 IBLine 时为空） */
   return core(mems,fid,isGroup,gme,userMsg,opt)}
@@ -35460,7 +35462,7 @@ function sxMd(s){var p=String(s||'').split('-');return p.length===3?((+p[1])+'.'
 function sxFull(s){var p=String(s||'').split('-');return p.length===3?(p[0]+'.'+(+p[1])+'.'+(+p[2])):''}
 function sxDs(s){var p=String(s||'').split('-');if(p.length!==3)return '';return ((+p[0])===new Date().getFullYear()?'':(p[0]+'.'))+(+p[1])+'.'+(+p[2])}
 function sxRange(a,b){a=String(a||'');b=String(b||'');if(!a||!b)return sxDs(a||b);return sxDs(a)+'～'+(a.slice(0,4)===b.slice(0,4)?sxMd(b):sxFull(b))}/* 同一年只写一次年份；今年的不写年份 */
-function sxHm(ts){var d=new Date(ts||Date.now());return (d.getMonth()+1)+'.'+d.getDate()+' '+pad(d.getHours())+':'+pad(d.getMinutes())}
+function sxHm(ts){var d=new Date(ts||Date.now());return (d.getFullYear()!==new Date().getFullYear()?d.getFullYear()+'.':'')+(d.getMonth()+1)+'.'+d.getDate()+' '+pad(d.getHours())+':'+pad(d.getMinutes())}
 function sxAgo(ts){var n=Math.max(0,Math.round((Date.now()-ts)/864e5));if(n<60)return{n:n,u:'天前'};if(n<365)return{n:Math.round(n/30),u:'个月前'};return{n:Math.round(n/36.5)/10,u:'年前'}}
 function sxCmp(a,b){a=String(a==null?'':a);b=String(b==null?'':b);return a<b?-1:(a>b?1:0)}
 function sxVis(m,fid){if(!m||!m.id||String(m.visibility||'').toLowerCase()==='private')return false;try{return !!isMemoryVisibleTo(m,fid,false,undefined)}catch(e){return true}}
@@ -35842,7 +35844,7 @@ function fmNone(box,html){/* v168：没有记录（或还在读）时，左边�
 
 function lsGet(k){try{var v=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(v)?v:[]}catch(e){return []}}
 function lsPut(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
-function xtWhen(ts){var d=new Date(ts||Date.now()),p=function(n){return n<10?'0'+n:''+n};return (d.getMonth()+1)+'.'+d.getDate()+' '+p(d.getHours())+':'+p(d.getMinutes())}
+function xtWhen(ts){var d=new Date(ts||Date.now()),p=function(n){return n<10?'0'+n:''+n};return (d.getFullYear()!==new Date().getFullYear()?d.getFullYear()+'.':'')+(d.getMonth()+1)+'.'+d.getDate()+' '+p(d.getHours())+':'+p(d.getMinutes())}
 function railMiss(){railLn();var el=$('fm-rc-miss');if(!el)return;var L=lsGet('ib_memerr'),R=L.slice().reverse().slice(0,50);
   var s='<div class="fm-h">Missed<small>错题本</small>'+(L.length?'<b>'+L.length+'</b>':'')+'</div>';
   if(!L.length)s+='<p class="fm-hint">还没有。每轮清单里点「不相关」的会记到这里：想起了、但这一轮不该想起的。</p>';
@@ -36047,7 +36049,7 @@ function _amUserName(){try{return (typeof _cachedUserName==='string'&&_cachedUse
 function _finTruncM(f){return /length|max_tokens/i.test(String(f||''))}
 async function _ibStewardApiM(cfg){try{return await _ibStewardApiD(cfg)}catch(e){return cfg}}/* v171：脉络分析也由管家模型执笔 */
 function _memP4M(){return 'on'}
-function _peekHmM(ts){var d=new Date(ts||Date.now()),p=function(n){return n<10?'0'+n:''+n};return (d.getMonth()+1)+'.'+d.getDate()+' '+p(d.getHours())+':'+p(d.getMinutes())}
+function _peekHmM(ts){var d=new Date(ts||Date.now()),p=function(n){return n<10?'0'+n:''+n};return (d.getFullYear()!==new Date().getFullYear()?d.getFullYear()+'.':'')+(d.getMonth()+1)+'.'+d.getDate()+' '+p(d.getHours())+':'+p(d.getMinutes())}
 function _wlogM(o){try{_wlogD(o)}catch(e){}}
 function openMemDetail(o){try{if(o&&o.id)openMemoryModal(o.id)}catch(e){}}/* v173：整理模块里点「查看」 */
 function cfgName(c){if(c&&typeof c==='object')return String(c.nickname||c.model||'TA');var x=null;try{x=(apiConfigs||[]).concat(archivedConfigs||[]).find(function(y){return y&&y.id===c})}catch(e){}return x?String(x.nickname||x.model||'TA'):'TA'}
