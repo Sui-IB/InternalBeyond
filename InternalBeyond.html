@@ -6442,7 +6442,7 @@ body:not(.theme-infernal) .ibr-col .ibr-host .chat-typing .typing-sec{opacity:0.
         </div>
         <div class="api-form-group" style="margin-top:4px" id="api-memjudge-group"><!-- v172：判官（cfg.memJudge，与手机端共用字段） -->
           <label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="api-memjudge-toggle" style="width:auto;accent-color:var(--accent)"> 判官</label>
-          <div style="font-size:0.72rem;opacity:0.55;margin-top:6px;line-height:1.6">候选多或拿不准时，先让便宜模型（或重排接口）挑一遍再给 TA，偶尔慢一两秒。开着时还会先把你这句话整理成话题和关键词再去找。用哪个模型、什么时候叫，在 API 页的记忆系统设置里选。</div>
+          <div style="font-size:0.72rem;opacity:0.55;margin-top:6px;line-height:1.6">候选多或拿不准时，先让便宜模型（或重排接口）挑一遍再给 TA，偶尔慢一两秒。开着时还会先把你这句话整理成话题和关键词，给判官多找候选。用哪个模型、什么时候叫，在 API 页的记忆系统设置里选。</div>
         </div>
         <div class="api-form-group" style="margin-top:4px" id="api-ctx-group">
           <label>上下文消息条数 <span style="font-weight:400;opacity:0.5;font-size:0.72rem">（每次发送时携带的最近消息数，默认 40 条）</span></label>
@@ -6578,9 +6578,9 @@ body:not(.theme-infernal) .ibr-col .ibr-host .chat-typing .typing-sec{opacity:0.
       </div>
       <div class="api-form-group" id="api-judge-group" style="margin-top:4px"><!-- v172：判官的全局设置（存 apiSettings 'memJudge'） -->
         <label>判官 API <span style="font-weight:400;opacity:0.5;font-size:0.72rem">（选一个便宜、不带思考的，每位 TA 在自己的 API 设置里单独开）</span></label>
-        <select id="api-judge-api" onchange="_ibJudgeSaveD()"><option value="">— 不用判官 —</option></select>
+        <select id="api-judge-api" onchange="_ibJudgeSaveD()"><option value="">— 不指定 —</option></select>
         <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-top:12px"><input type="checkbox" id="api-rr-on" onchange="_ibJudgeSaveD()" style="width:auto;accent-color:var(--accent)"> 重排接口</label>
-        <div style="font-size:0.72rem;opacity:0.55;margin-top:6px;line-height:1.6">判官优先用它，比聊天模型快、稳、便宜，门里有候选就每轮请它挑。没开就用上面的判官 API，只在拿不准时叫。8 秒没答就照原来的排序。</div>
+        <div style="font-size:0.72rem;opacity:0.55;margin-top:6px;line-height:1.6">判官用它给候选打分、筛选，比聊天模型快、稳、便宜。</div>
         <div id="api-rr-body" style="display:none;margin-top:8px">
           <label>服务商</label>
           <select id="api-rr-prov" onchange="_ibJudgeSaveD()"><option value="siliconflow">硅基流动</option><option value="jina">Jina</option><option value="cohere">Cohere</option><option value="custom">自定义（/rerank）</option></select>
@@ -6590,7 +6590,7 @@ body:not(.theme-infernal) .ibr-col .ibr-host .chat-typing .typing-sec{opacity:0.
           <input id="api-rr-key" type="password" placeholder="sk-…" onchange="_ibJudgeSaveD()">
           <label style="margin-top:8px">模型 <span style="font-weight:400;opacity:0.5;font-size:0.72rem">（留空用服务商默认）</span></label>
           <input id="api-rr-model" type="text" onchange="_ibJudgeSaveD()">
-          <label style="margin-top:8px">门槛 <span style="font-weight:400;opacity:0.5;font-size:0.72rem">（分数不到它的不挑，先 0.65）</span></label>
+          <label style="margin-top:8px">门槛 <span style="font-weight:400;opacity:0.5;font-size:0.72rem">（没想起的，重排分到这个数才补进来；先 0.65）</span></label>
           <input id="api-rr-thr" type="text" inputmode="decimal" placeholder="0.65" onchange="_ibJudgeSaveD()">
           <div style="display:flex;align-items:center;gap:10px;margin-top:10px"><button type="button" class="btn" onclick="_ibRrTestD()" style="padding:6px 14px;font-size:0.8rem">测一下</button><span id="api-rr-stat" style="font-size:0.72rem;opacity:0.6"></span></div>
         </div>
@@ -7364,7 +7364,7 @@ i would like the room to be enough.
         <p><strong>测评与整理</strong>：在透视区最下面。测评：把某一轮存成一道题（每轮卡片右上角或错题本里点「测评」），改了设置后跑一遍，看该想起的还想不想得起、不该想起的还会不会出来。整理：管家模型把某位 TA 写的记忆翻一遍，提出换标签的建议，确认后才改，改了能撤销。</p>
         <p><strong>记忆连线 Strands</strong>：透视区上半是脉络板块。在左上角选一位 TA，点 Find Strands：管家模型（没选就用这位 TA 自己的）把它可见的记忆分组，逐组找出反复出现的同一主题，各写一段观察，列为待确认。确认后生效，TA 召回其中的记忆时会同时看到这段观察。示意图每行一条脉络、每格一页记忆，本轮新增的排在最上方。选中一条脉络可编辑、移出成员、删除或重新生成。示意图一次看一年，十二个月都画出来，记忆跨了几年时度尺左边可以前后翻。拖度尺下面的分点可以调整两边月份的宽度，双击复位。脉络多时一页先露 8 条，其余在框里上下滚，右下角可以拉高。右栏的「脉络文件」可以把脉络单独导出、导入。</p>
           <p><strong>海岸</strong>：星图窗右上角可在星空与海岸之间切换，记忆库与透视各自记住上次选的那一种。海岸只在切过去时加载，点「wade in」进全屏看全貌，Esc 或右上角关闭。</p>
-          <p><strong>判官</strong>：在某位 TA 的 API 设置里开，在 API 页 → 记忆系统设置里选判官 API 或重排接口：候选多或拿不准时先让它挑一遍，8 秒没答就照原来的排序。配了重排接口时，门里只要有候选就请它挑（可以一条不挑）；判官挑过的那一轮，新卡让给它。开着时还会先把你这句话整理成话题和关键词再去找。</p>
+          <p><strong>判官</strong>：在某位 TA 的 API 设置里开，在 API 页 → 记忆系统设置里选判官 API 或重排接口：候选多或拿不准时先让它挑一遍，8 秒没答就照原来的排序。配了重排接口时，每轮请重排接口给候选打分，有把握时筛掉明显不如的、补进过门槛的，没把握时原样给。开着时还会先让判官 API 选的模型把你这句话整理成话题和关键词，给判官多找候选（没选判官 API 就用管家模型）。</p>
           <p><strong>事发时间与出处</strong>：TA 写入记忆时可以写日期，只写到月或年的按月、年存。Save Memory 取这段对话最早一条的时间，信与日志取它自己的时间。记忆给 TA 时带的是事发日期。记忆卡展开后点「看出处」，能看到这条记忆当时依据的那几句原话。</p>
           <p><strong>待审核</strong>：装上这一版之后 TA 新写的记忆，卡片上带「待审核」小签。展开卡片点「标为已审」，或者你改过它，小签就没了。状态筛选里可以只看待审核的。记忆卡展开后也能直接「标为过时」或取消。</p>
           <p><strong>回望标 Gazing Back</strong>：Chat 全屏页里想起了记忆的回复，气泡下沿有「Gazing Back N」；点开就地看这一轮的清单，可标「过时」。</p>
@@ -7383,9 +7383,9 @@ i would like the room to be enough.
           <p>②<strong>同一条脉络限额两个位子</strong>：同一条脉络一轮最多占两个位子——给封面加最贴这句话的一两页，接着聊就换下一页。</p>
           <p>③<strong>近似去重</strong>：同一天讲同一件事、意思很近的几页只给最贴的一页。</p>
           <p>④<strong>过时记忆默认不给</strong>：标为过时的记忆平时不给，你说「以前 / 原来 / 当时」时才给，行尾标 [已过时]。</p>
-          <p>⑤<strong>字面匹配的最低门槛</strong>：只对上一个两字片段不算数——要这条记忆的标签在你的话里，或对上库里当过标签的词、连着四个字、两处不相干的稀有词。明说「还记得」或句里的时间正好罩住那件事时，用得多的标签也放行。</p>
+          <p>⑤<strong>字面匹配的最低门槛</strong>：只对上一个两字片段不算数——要这条记忆的标签在你的话里，或提到它的完整标题（四个字以上），或对上库里当过标签的词、连着四个字、两处不相干的稀有词。明说「还记得」或句里的时间正好罩住那件事时，用得多的标签也放行。</p>
           <p>⑥<strong>向量需要突出</strong>：向量除了过门槛，还要明显比库里其余记忆更像这句话，没过的在「差一点」里标「向量不够突出」。</p>
-          <p>⑦<strong>落差淘汰</strong>：第二、三条只按相关程度和最强的那条比，够不上一半的不给；重要性与新旧只管先后。</p>
+          <p>⑦<strong>落差淘汰</strong>：第二、三条只按相关程度和最强的那条比，够不上七成的不给；重要性与新旧只管先后。</p>
           <p>⑧<strong>新写不降门槛</strong>：刚写进去的记忆不享受额外优待。</p>
           <p><strong>余温</strong>：API 页 → 记忆系统设置里的开关（默认关）——上一轮刚想起的记忆，这一轮接着聊却没想起别的时，留一行提醒，只管一轮。</p>
           <p><strong>测评</strong>：「跑一遍」给出命中、误召、空手几项数字。</p>
@@ -7393,7 +7393,7 @@ i would like the room to be enough.
         <div class="guide-sub">
           <p><strong>Auto Memory</strong>：「你对我的了解。」与记忆库不同，Auto Memory 是每个 AI 独立维护的、关于你的长期认知档案。</p>
           <p>每个 API 可在 API 设置中独立开启。开启后，AI 在对话过程中会自主判断是否需要记录：它通过在回复中插入系统标签来创建、更新或删除条目，标签由系统实时拦截执行，用户只会看到操作结果卡片，不会看到标签本身。每轮对话最多执行 3 次操作，单条内容上限 600 字符。用户也可以在 Memory 页手动编辑或删除任何条目。</p>
-          <p><strong>分类与优先级</strong>：档案按六个分类组织：工作（Work）、个人（Personal）、近期关注（Top of mind，过时即更新）、历史（History）、长期背景（Background，仅限反复出现的模式）、用户指令（Instructions，仅限你的明确要求）。每条可设优先级：always（核心事实，全档上限 5 条，每次对话必定注入）、normal、low（仅当话题相关时浮现）。档案卡上每条最左边那枚小按钮显示当前优先级（★ always / ◐ normal / ○ low），点一下切到下一档。</p>
+          <p><strong>分类与优先级</strong>：档案按六个分类组织：工作（Work）、个人（Personal）、近期关注（Top of mind，过时即更新）、历史（History）、长期背景（Background，仅限反复出现的模式）、用户指令（Instructions，仅限你的明确要求）。每条可设优先级：always（核心事实，全档上限 5 条，每次对话必定注入）、normal 与 low（仅当话题相关时浮现）。档案卡上每条最左边那枚小按钮显示当前优先级（★ always / ◐ normal / ○ low），点一下切到下一档。</p>
           <p><strong>档案并入</strong>：在单个 API 设置里开。开着时，TA 新写的条目和同一类里的某条很像，会改成更新那一条，很像某条 always 条目时先请你确认。</p>
           <p><strong>注入位置与缓存</strong>：always 条目写在 system 里、随提示缓存一起命中，只有这些条目本身改动时才重建一次；按相关度命中的条目随当前消息尾部逐轮变化，不占缓存。所以让 AI 随意增删 normal / low 条目不会碰缓存，改 always 才会。</p>
           <p><strong>注入方式</strong>：always 条目全文常驻；normal / low 与记忆库过同一道门，聊到相关的才给，每轮最多 2 条，三轮内给过的只在接着追问同一件事时再给，没过门的在透视区的「差一点」里标 [档案]。一对一、话题频道（不论「想起记忆」开关）、群聊、写信、留言都是这一套；没有字数上限，常驻了多少字在 Memory 页仪表盘看，按 TA 分列。在 Memory 页底部，可通过左右箭头切换查看不同 AI 的 Auto Memory 档案。</p>
@@ -7404,7 +7404,7 @@ i would like the room to be enough.
           <p><strong>记忆系统速查 — 从想起到写入</strong>：「它怎么想起、我该开什么。」记忆系统的开关与规则一页速查。</p>
           <p><strong>总览</strong>：两本账。记忆库（Memory 页「记忆」）记某一次发生的事，聊到才想起；记忆档案（Auto Memory）记你一直如此的样子，标 always 的每轮都在。聊过的原话归对话摘要管。记忆系统怎么用、先开哪些开关、每个开关管什么、为什么没想起，都在这一节。</p>
           <p><strong>先开哪些</strong>：每位 TA 的 API 设置：开「想起记忆」「启用记忆库写入」「Auto Memory」；「每轮最多想起」想要准选 1 或 2 条，想要多选 3 条。API 页 → 记忆系统设置：有向量服务就开「向量检索」，换个说法也想得起；「余温」建议开；判官和重排接口是进阶项，先不开也行。聊得长就开对话摘要，并选一个便宜的管家模型。</p>
-          <p><strong>一轮里 TA 怎么想起</strong>：①寒暄（嗯、哈哈、晚安）不翻；②你这句不足 6 个字时，拼上你三分钟内的上一句再找；③先过门：这条记忆的标签在你的话里，或字面、意思对得上；④过了门的排先后，更相关、更新、更重要、还没解决的靠前；⑤给全文，每轮最多 1～3 条，够不上最强那条一半的不给；⑥没有合适的就一条不给，这是正常的。</p>
+          <p><strong>一轮里 TA 怎么想起</strong>：①寒暄（嗯、哈哈、晚安）不翻；②你这句不足 6 个字时，拼上你三分钟内的上一句再找；③先过门：这条记忆的标签在你的话里，或字面、意思对得上；④过了门的排先后，更相关、更新、更重要、还没解决的靠前；⑤给全文，每轮最多 1～3 条，够不上最强那条七成的不给；⑥没有合适的就一条不给，这是正常的。</p>
           <p><strong>为什么没想起</strong>：点回复气泡下的「Gazing Back」，或到透视区看这一轮的「记忆」和「差一点」。没过门：标签太泛或没有标签，去透视区「整理」洗标签，或在记忆详情里补上人名、地名、物件；刚给过：三轮内给过全文的只留一行「刚想起过」，接着追问同一件事会再给全文，档案同样；原话就在眼前：这件事的原话还在上下文里，不用再念一遍；落差不够：这一轮有更贴的；向量没连上：那一轮的 Gazing Back 标着退回了关键词。</p>
           <p><strong>为什么想起了不相干的</strong>：透视区每轮卡片里看每条的来由。来由是「标签」：那个标签太日常（手机、周末），换成具体的词；来由是「向量 0.5x」：把「每轮最多想起」调到 1～2 条，或在记忆系统设置的「高级」里把门槛调高一点。不对的那条点「不相关」，记进错题本，攒几条后去透视区「测评」跑一遍再改设置。</p>
           <p><strong>明说就会多翻</strong>：话里有「还记得、记得吗、你说过、上次说、之前说过」时，门会放宽，最多给 4 条。话里有时间（昨天、上周、上个月、去年、3 月、两年前）时，那段时间里的记忆排得更靠前。</p>
@@ -7415,7 +7415,7 @@ i would like the room to be enough.
           <p><strong>谁看得到</strong>：每条记忆四种范围：公开（所有 TA）、仅指定、排除指定、完全私密（任何 TA 都看不到，向量也不建）。TA 自己写的默认只有它看得到。群聊里只给公开的；安静的话题频道（房间）只给这位 TA 自己写的和你手写的。标为过时的平时不给，你说「以前、当时」才给。</p>
           <p><strong>向量检索与门槛</strong>：API 页 → 记忆系统设置填服务商、Key、模型后点「重建索引」。门槛收在「高级」里，留空用默认（bge-m3 是 0.48），越高越严。记忆内容只发给你填的向量服务商，完全私密的不发。换模型要整库重建。连不上的那一轮自动退回关键词，不丢东西。</p>
           <p><strong>写进去的规则</strong>：TA 每条回复最多写 3 条记忆库、做 3 次档案操作；记忆库写某一次发生的事，档案写一直如此的事。想让以后想得起：标题和标签里要有具体的名字、地点、物件；重要性 5 是普通，8 是转折点。你也可以在聊天里选几条消息点「生成记忆」，或在 Memory 页手写。TA 开着「记忆库检索」时，可以自己翻某条记忆当时的原话。</p>
-          <p><strong>一千条以后</strong>：每轮给多少不变，门会自己变严。要做三件事：定期去透视区「整理」洗标签、把反复出现的事牵成脉络；把不成立的标为过时；常聊的那位 TA 把「每轮最多想起」调到 1～2 条。库越大越该开向量检索，再配一个重排接口当判官。</p>
+          <p><strong>一千条以后</strong>：每轮给多少不变，门会自己变严。要做三件事：定期去透视区「整理」洗标签、把反复出现的事牵成脉络；把不成立的标为过时；常聊的那位 TA 把「每轮最多想起」调到 1～2 条。库越大越该开向量检索，再配一个重排接口帮判官筛选。</p>
         </div>
       </div>
 
@@ -7659,7 +7659,7 @@ i would like the room to be enough.
         <p class="cp-warn"><strong>本项目官方版本免费提供。</strong><br>如果你通过付费方式获得了未经作者授权的副本，请停止传播并联系作者：<br>GitHub: Sui-IB ｜ QQ: 1282901880 ｜ Email: <a class="ib-email-link" data-email-user="1282901880" data-email-domain="qq.com">1282901880 [at] qq.com</a></p>
         <p style="font-size:0.78rem;opacity:0.72;line-height:1.8">本许可自 2026-07-26 起适用于当前版本及后续版本。此前已合法取得的旧版本，继续受取得时随附的许可约束。完整许可文件应与 GitHub 仓库一并发布。</p>
       </div>
-      <p style="margin-top:14px;font-size:0.82rem;opacity:0.7;line-height:1.8">本项目使用 Anthropic Claude (Opus 4.6) 进行开发构建，Anthropic Claude (Fable 5)、Claude (Fable 5.1)、Claude (Fable 5.2)、Claude (Opus 5.5)、Claude (Opus 4.8)、Claude (Sonnet 4.6) 、Claude (Opus 5)、ChatGPT (5.6 Sol)亦参与了编程工作。项目图像素材均由 OpenAI GPT-IMAGE-2 生成，并由作者使用 Adobe Photoshop CS 进行修改、界面设计与编绘。AI 工具为辅助创作工具，不对项目内容拥有版权。本声明适用于项目的所有版本与衍生形式。第三方服务名称与商标归各自权利人所有。</p>
+      <p style="margin-top:14px;font-size:0.82rem;opacity:0.7;line-height:1.8">本项目使用 Anthropic Claude (Opus 4.6) 进行开发构建，Anthropic Claude (Fable 5)、Claude (Fable 5.1)、Claude (Fable 5.2)、Claude (Opus 5.5)、Claude (Opus 4.8)、Claude (Sonnet 4.6) 、Claude (Opus 5)、ChatGPT (5.6 Sol)亦参与了编程工作，Claude (Sonnet 5.5) 参与了交付复查。项目图像素材均由 OpenAI GPT-IMAGE-2 生成，并由作者使用 Adobe Photoshop CS 进行修改、界面设计与编绘。AI 工具为辅助创作工具，不对项目内容拥有版权。本声明适用于项目的所有版本与衍生形式。第三方服务名称与商标归各自权利人所有。</p>
     </div>
     <div class="guide-credits">
       <span class="internal-only">Designed by Sui · Built with Claude (Opus 4.6)</span><span class="infernal-only">Built by Claude (Opus 4.6) · For Sui</span><br>
@@ -24241,7 +24241,7 @@ var _RR_PRESET_D={siliconflow:{base:'https://api.siliconflow.cn/v1',model:'BAAI/
 var _ibJudgeCacheD=null;
 async function _ibJudgeGetD(){if(_ibJudgeCacheD)return _ibJudgeCacheD;var r=null;try{r=await dbGet('apiSettings','memJudge')}catch(e){}if(!r||typeof r!=='object')r={id:'memJudge'};if(!r.rerank||typeof r.rerank!=='object')r.rerank={};_ibJudgeCacheD=r;return r}
 function _ibJudgeUiD(){return _ibJudgeGetD().then(function(S){var $=function(i){return document.getElementById(i)},sel=$('api-judge-api');if(!sel)return;
-  var cur=String(S.api||'');sel.innerHTML='<option value="">— 不用判官 —</option>'+(apiConfigs||[]).map(function(c){return '<option value="'+esc(String(c.id))+'">'+esc(String(c.nickname||c.model||c.id))+'</option>'}).join('');sel.value=cur;if(sel.value!==cur)sel.value='';
+  var cur=String(S.api||'');sel.innerHTML='<option value="">— 不指定 —</option>'+(apiConfigs||[]).map(function(c){return '<option value="'+esc(String(c.id))+'">'+esc(String(c.nickname||c.model||c.id))+'</option>'}).join('');sel.value=cur;if(sel.value!==cur)sel.value='';
   if($('api-mem-carry'))$('api-mem-carry').checked=!!S.carry;/* v179：余温 */
   var R=S.rerank||{};if($('api-rr-on'))$('api-rr-on').checked=!!R.on;if($('api-rr-body'))$('api-rr-body').style.display=R.on?'':'none';
   if($('api-rr-prov'))$('api-rr-prov').value=_RR_PRESET_D[R.prov]?R.prov:'siliconflow';var pre=_RR_PRESET_D[$('api-rr-prov')?$('api-rr-prov').value:'siliconflow']||_RR_PRESET_D.custom;
@@ -24254,26 +24254,39 @@ async function _ibJudgeSaveD(){var $=function(i){return document.getElementById(
   try{var pre=_RR_PRESET_D[S.rerank.prov]||_RR_PRESET_D.custom;if($('api-rr-body'))$('api-rr-body').style.display=S.rerank.on?'':'none';if($('api-rr-base'))$('api-rr-base').placeholder=pre.base||'https://…/v1';if($('api-rr-model'))$('api-rr-model').placeholder=pre.model||'模型名'}catch(e){}}
 function _ibVecAdvD(){var b=document.getElementById('api-vec-adv-btn'),d=document.getElementById('api-vec-adv');if(!d)return;var on=d.style.display==='none';d.style.display=on?'':'none';if(b){b.textContent=on?'高级 ▾':'高级 ▸';b.setAttribute('aria-expanded',on?'true':'false')}}/* v179：门槛折在「高级」里 */
 function _ibRaceD(p,ms){return Promise.race([p,new Promise(function(_,rej){setTimeout(function(){var e=new Error('timeout');e.name='AbortError';rej(e)},ms)})])}
-async function _memRerankD(J,q,opt,rr,tmo){
+async function _memRerankD(J,q,opt,rr,tmo,pr,mems){
   var K={judgeKind:'rerank'};
   try{var pre=_RR_PRESET_D[rr.prov]||_RR_PRESET_D.custom,base=String(rr.base||pre.base||'').replace(/\/+$/,''),model=String(rr.model||pre.model||'').trim();
     if(!base)return Object.assign({judgeFallback:'重排地址没填'},K);if(!model)return Object.assign({judgeFallback:'重排模型没填'},K);
-    var cq=IBMem.cleanQuery(q,opt&&opt.names)||String(q||''),docs=J.menu.map(function(c){return [c.t,c.d,c.s,c.b3||c.b].filter(Boolean).join('｜').slice(0,700)}),thr=(+rr.thr>0&&+rr.thr<1)?+rr.thr:0.65;
-    var body={model:model,query:cq.slice(0,500),documents:docs,top_n:Math.min(docs.length,8)};if(rr.prov==='siliconflow'||rr.prov==='jina')body.return_documents=false;
+    var by9={};(mems||[]).forEach(function(m){if(m&&m.id!=null)by9[String(m.id)]=m});
+    var cq=IBMem.cleanQuery(q,opt&&opt.names)||String(q||''),docs=J.menu.map(function(c){var m=by9[String(c.id)],b=m?String(m.content||'').replace(/\s+/g,' ').trim():'';return [c.t,c.d,c.s,b?b.slice(0,1500):(c.b3||c.b)].filter(Boolean).join('｜').slice(0,1900)}),thr=(+rr.thr>0&&+rr.thr<1)?+rr.thr:0.65;
+    var body={model:model,query:cq.slice(0,500),documents:docs,top_n:docs.length};if(rr.prov==='siliconflow'||rr.prov==='jina')body.return_documents=false;
     var ac=new AbortController(),t0=Date.now(),tm=setTimeout(function(){try{ac.abort()}catch(e){}},tmo),res=null,j=null;
     try{res=await fetch(base+'/rerank',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+rr.key},body:JSON.stringify(body),signal:ac.signal});j=await res.json().catch(function(){return null})}finally{clearTimeout(tm)}
     if(!res||!res.ok)return Object.assign({judgeFallback:'重排接口 '+(res?res.status:'无响应')},K);
     var arr=(j&&(Array.isArray(j.results)?j.results:j.data))||null;if(!Array.isArray(arr))return Object.assign({judgeFallback:'重排没按格式答'},K);
     var sc=arr.map(function(x){return{n:parseInt(x&&x.index,10),s:+(x&&(x.relevance_score!=null?x.relevance_score:x.score))}}).filter(function(x){return x.n>=0&&x.n<J.menu.length&&isFinite(x.s)}).sort(function(a,b){return b.s-a.s});
     if(!sc.length)return Object.assign({judgeFallback:'重排没按格式答'},K);
-    var ids=[],why={};sc.forEach(function(x){if(x.s>=thr&&ids.length<3){var c=J.menu[x.n];ids.push(c.id);why[c.id]='重排 '+x.s.toFixed(2)}});
-    return{judgePick:{ids:ids,why:why,ms:Date.now()-t0,top:sc[0].s,kind:'rerank',all:sc.slice(0,6).map(function(x){return{t:String(J.menu[x.n].t||'').slice(0,20),s:+x.s.toFixed(2)}})}};
+    var all=sc.slice(0,6).map(function(x){return{t:String(J.menu[x.n].t||'').slice(0,20),s:+x.s.toFixed(2)}}),S9={};sc.forEach(function(x){S9[String(J.menu[x.n].id)]=x.s});
+    var fb=function(t){return Object.assign({judgeFallback:t,judgeAll:all},K)},h9=(pr&&pr.hit)||{},forced=!!h9.forced;
+    var b9=(Array.isArray(h9.it)?h9.it:[]).filter(function(x){return x&&(x.k==='s'||x.k==='n')}).map(function(x){return{id:String(x.id),w:String(x.w||'').replace(/^追问 · /,'')}});
+    if(b9.some(function(b){return b.w.indexOf('经档案')===0}))return fb('这轮是顺着档案想起的');
+    var pool=b9.filter(function(b){return S9[b.id]!=null}).map(function(b){return S9[b.id]}).concat(sc.filter(function(x){return x.s>=thr}).map(function(x){return x.s})),top=pool.length?Math.max.apply(null,pool):0;/* 只和要给出去的比：底子里被打了分的、加上分数过门槛要补进来的 */
+    if(!pool.length||top<0.15)return fb(sc[0].s<0.15?('分数都低，最高 '+sc[0].s.toFixed(2)):('没有过门槛的，最高 '+sc[0].s.toFixed(2)));
+    var keep=b9.filter(function(b,i){return S9[b.id]==null||forced||i===0||b.w.indexOf('片段')===0||b.w.indexOf('标题')===0||S9[b.id]>=0.5*top}).map(function(b){return b.id});
+    var add=sc.filter(function(x){return x.s>=thr&&keep.indexOf(String(J.menu[x.n].id))<0}).map(function(x){return String(J.menu[x.n].id)});
+    if(!keep.length&&!add.length)return fb('没有过门槛的，最高 '+sc[0].s.toFixed(2));
+    var cap=forced?4:((opt&&(+opt.seat===1||+opt.seat===2))?+opt.seat:3);
+    var ids=keep.concat(add).map(function(id,i){return{id:id,i:i,s:S9[id]==null?-1:S9[id]}}).sort(function(a,b){return (b.s-a.s)||(a.i-b.i)}).map(function(z){return z.id});
+    if(b9.length){var ix=ids.indexOf(b9[0].id);if(ix>=cap){ids.splice(ix,1);ids.splice(cap-1,0,b9[0].id)}}
+    var why={};add.forEach(function(id){why[id]='重排 '+S9[id].toFixed(2)});
+    return{judgePick:{ids:ids,why:why,ms:Date.now()-t0,top:sc[0].s,kind:'rerank',all:all}};
   }catch(e){return Object.assign({judgeFallback:(e&&(e.name==='AbortError'||/abort/i.test(String(e.message||''))))?'重排超时':'重排出错'},K)}}
-async function _memJudgeD(mems,cfg,q,opt,msgs){
-  try{var pr=IBMem.build(mems,cfg.id,false,undefined,q,Object.assign({},opt,{record:false,judgeProbe:true})),J=pr&&pr.judge,S=await _ibJudgeGetD(),R=S.rerank||{},rr=!!(R.on&&R.key);
-    if(!J||!J.menu||!J.menu.length)return null;if(!rr&&!J.need&&!(opt&&opt.qx&&opt.qx.need!==false&&String(opt.qx.topic||'').trim()))return null;
+async function _memJudgeD(mems,cfg,q,opt,msgs,qxm){
+  try{var pr=IBMem.build(mems,cfg.id,false,undefined,q,Object.assign({},opt,{record:false,judgeProbe:true})),qxj=(qxm&&qxm.qx&&qxm.qx.need!==false)?qxm.qx:null,prq=qxj?IBMem.build(mems,cfg.id,false,undefined,q,Object.assign({},opt,{qx:qxj,qvec:qxm.qvec||opt.qvec,vecDeg:qxm.qvec?!!qxm.vecDeg:opt.vecDeg,record:false,judgeProbe:true})):pr,J=prq&&prq.judge,S=await _ibJudgeGetD(),R=S.rerank||{},rr=!!(R.on&&R.key);
+    if(!J||!J.menu||!J.menu.length)return null;if(!rr&&!J.need&&!(qxj&&String(qxj.topic||'').trim()))return null;
     var tmo=8000;
-    if(rr)return await _memRerankD(J,q,opt,R,tmo);
+    if(rr)return await _memRerankD(J,q,opt,R,tmo,pr,mems);/* v201：试跑的结果和记忆表一并交过去 */
     var jid=String(S.api||'');if(!jid)return{judgeFallback:'没选判官 API'};
     var jc=(apiConfigs||[]).find(function(c){return c&&c.id===jid});if(!jc||!jc.apiKey||!jc.endpoint)return{judgeFallback:'判官 API 没有 Key'};
     var prev=(msgs||[]).slice(-5,-1).filter(function(m){return m&&typeof m.content==='string'&&m.content.trim()}).map(function(m){return (m.role==='user'?'对方':'你')+'：'+String(m.content).replace(/\s+/g,' ').slice(0,150)}).join('\n');
@@ -24286,19 +24299,19 @@ async function _memJudgeD(mems,cfg,q,opt,msgs){
   }catch(e){return{judgeFallback:(e&&(e.name==='AbortError'||/abort|timeout/i.test(String(e.message||''))))?'判官超时':'判官出错'}}}
 async function _memQxD(cfg,q,hist,names){
   var t0=Date.now();
-  try{var api=cfg;try{api=await _ibStewardApiD(cfg)}catch(e){}if(!api||!api.apiKey||!api.endpoint)return null;
+  try{var api=cfg;try{var jq9=null;try{var S9=await _ibJudgeGetD(),jid9=String((S9&&S9.api)||'');if(jid9)jq9=(apiConfigs||[]).find(function(c){return c&&c.id===jid9})||null}catch(e){}if(jq9&&jq9.apiKey&&jq9.endpoint)api=jq9;else api=await _ibStewardApiD(cfg)}catch(e){}if(!api||!api.apiKey||!api.endpoint)return null;/* v201：搜索单由判官 API 选的模型写，没选才用管家模型 */
     var u=(typeof _cachedUserName==='string'&&_cachedUserName)||'用户',ta=String((cfg&&(cfg.nickname||cfg.model))||'TA'),p2=function(x){return (x<10?'0':'')+x};
     var arr=(hist||[]).filter(function(m){return m&&(m.role==='user'||m.role==='assistant')&&((typeof m.content==='string'&&m.content.trim())||(m.role==='user'&&m.voice&&m.voice.transcript))});if(arr.length&&arr[arr.length-1].role==='user')arr=arr.slice(0,-1);/* v187：语音消息也算近几句 */
     var hs=arr.slice(-6).map(function(m){return (m.role==='user'?u:ta)+'：'+String((m.role==='user'&&!(typeof m.content==='string'&&m.content.trim())&&m.voice)?(m.voice.transcript||''):m.content).replace(/<\/?ws_[^>]*>/g,' ').replace(/\s+/g,' ').trim().slice(0,200)}).join('\n');
     var d=new Date(),day=d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate())+' 周'+'日一二三四五六'.charAt(d.getDay());
     var body=_MEM_QX_T_D.replace('{DAY}',day).replace('{HIST}',hs||'（前面没有对话）').split('{U}').join(u).replace('{Q}',String(q||'').slice(0,400));
     var clean=Object.assign({},api,{systemPrompt:'你是记忆检索的前哨，只输出 JSON。',streaming:false,thinkingEnabled:false,promptCache:false,webSearch:false});
-    var txt=await _ibRaceD(callApi(clean,body),2500),mt=String(txt||'').match(/\{[\s\S]*\}/);if(!mt)return null;var o=JSON.parse(mt[0]);
+    var txt=await _ibRaceD(callApi(clean,body),4000),mt=String(txt||'').match(/\{[\s\S]*\}/);if(!mt){try{window._ibQxNoteD='没按格式答'}catch(x){}return null}var o=JSON.parse(mt[0]);/* v201：等 4 秒（原 2.5） */
     var need=o.need!==false,src=String(q||'')+'\n'+hs,topic=need?String(o.topic||'').replace(/\s+/g,' ').trim().slice(0,60):'';
     var kws=(Array.isArray(o.keywords)?o.keywords:[]).map(function(x){return String(x||'').trim()}).filter(function(x){return x&&x.length<=20&&src.indexOf(x)!==-1}).slice(0,5),win=null;
     if(o.date&&o.date.from){var a=Date.parse(String(o.date.from)+'T00:00:00'),b=Date.parse(String(o.date.to||o.date.from)+'T23:59:59');if(isFinite(a)&&isFinite(b)&&b>=a)win=[a,b]}
     return {need:need,topic:topic,kws:kws,win:win,ms:Date.now()-t0,on:true}}
-  catch(e){return null}}
+  catch(e){try{window._ibQxNoteD=(e&&(e.name==='AbortError'||/abort|timeout/i.test(String(e.message||''))))?'超时':'出错'}catch(x){}return null}}
 /* ═══ v174：待审核、看出处、重排接口连通测试（与手机端同口径） ═══ */
 function _rvSinceD(){try{var v=+localStorage.getItem('ib_rv_since')||0;if(!v){v=Date.now();localStorage.setItem('ib_rv_since',String(v))}return v}catch(e){return 0}}
 try{_rvSinceD()}catch(e){}/* 从装上这一版那一刻起，TA 新写的记忆才算「待审核」；之前的、你手动写的、你改过的都不算 */
@@ -24330,7 +24343,7 @@ function _wlogD(o){try{var L=JSON.parse(localStorage.getItem('ib_wlog')||'[]')||
 function _ibColdOnD(){try{return localStorage.getItem('ib_coldBlock')!=='0'}catch(e){return true}}
 async function getMemoryContext(apiId,opts){
   
-  opts=opts||{};var _qxD=null;
+  opts=opts||{};var _qxD=null,_qvqD=null;
   try{
     if(!(window.IBMem&&IBMem.build))return '';
     const all=opts.noMem?[]:await dbGetAll('memories');/* v181：noMem＝记忆库关着、只让档案池过门 */
@@ -24343,15 +24356,15 @@ async function getMemoryContext(apiId,opts){
     if(opts.record==='defer'){
       try{const t2=(typeof apiConfigs!=='undefined'&&apiConfigs||[]).find(x=>x&&x.id===apiId)||{};o.seat=(+t2.memSeat===1||+t2.memSeat===2)?+t2.memSeat:3;o.gaze=!!t2.memGaze}catch(e){}
       try{if(!opts.isGroup){const _S9=await _ibJudgeGetD();if(_S9&&_S9.carry)o.carry=true}}catch(e){}/* v179：余温（API 页 → 记忆系统设置里的全局开关，只接一对一） */
-      try{if(opts.judge&&!opts.fresh){const _tq=(typeof apiConfigs!=='undefined'&&apiConfigs||[]).find(x=>x&&x.id===apiId);if(_tq&&_tq.memJudge&&!IBMem.trivial(IBMem.cleanQuery(String(opts.userMessage||''),o.names||[])))_qxD=await _memQxD(_tq,String(opts.userMessage||''),opts.hist,o.names||[])}}catch(e){_qxD=null}/* v172：搜索单（开着判官的 TA 才写） */
-      if(_qxD){o.qxs=_qxD;if(_qxD.on)o.qx=_qxD}
-      try{const q0=String(opts.userMessage||'');if(window.IBVec&&IBVec.on()&&!IBMem.trivial(IBMem.cleanQuery(q0,o.names||[]))){const qv=await IBVec.embedQuery((_qxD&&_qxD.on&&_qxD.topic)?_qxD.topic:q0);/* v155：同一句 10 分钟内只问一次、正在问的也复用，由向量模块自己记（手机端 v432） */if(qv){o.qvec=qv.vec;o.vecDeg=!!qv.deg;o.vecWhy=qv.why||''}}}catch(e){}
+      try{window._ibQxNoteD='';if(opts.judge&&!opts.fresh){const _tq=(typeof apiConfigs!=='undefined'&&apiConfigs||[]).find(x=>x&&x.id===apiId);if(_tq&&_tq.memJudge&&!IBMem.trivial(IBMem.cleanQuery(String(opts.userMessage||''),o.names||[])))_qxD=await _memQxD(_tq,String(opts.userMessage||''),opts.hist,o.names||[])}}catch(e){_qxD=null}/* v172：搜索单（开着判官的 TA 才写） */
+      if(_qxD){o.qxs=_qxD;if(_qxD.on&&_qxD.need===false)o.qx={need:false,topic:'',kws:[],win:null,ms:_qxD.ms|0,on:true};else if(_qxD.on)o.qxMenu=true}/* v202：最后这一遍不带搜索单（过不过门只看你自己这句话）；它判成「没有具体的事」照旧不翻 */
+      try{const q0=String(opts.userMessage||'');if(window.IBVec&&IBVec.on()&&!IBMem.trivial(IBMem.cleanQuery(q0,o.names||[]))){const _tqD=(_qxD&&_qxD.on&&_qxD.need!==false&&_qxD.topic)?String(_qxD.topic):'';const _pvD=await Promise.all([IBVec.embedQuery(q0),_tqD?IBVec.embedQuery(_tqD):Promise.resolve(null)]);const qv=_pvD[0];_qvqD=_pvD[1];/* v155：同一句 10 分钟内只问一次、正在问的也复用，由向量模块自己记（手机端 v432） */if(qv){o.qvec=qv.vec;o.vecDeg=!!qv.deg;o.vecWhy=qv.why||''}}}catch(e){}
     }
     if(opts.fresh)o.fresh=true;/* v171：续答那一轮按同一句话再取一遍，不动冷却与轮数 */
     if(opts.amPool&&opts.amPool.length)o.am=opts.amPool;/* v170：档案里不常驻的条目与记忆过同一道门，过门的每轮至多 2 条 */
-    if(opts.judge&&!opts.fresh){try{const _tj=(typeof apiConfigs!=='undefined'&&apiConfigs||[]).find(x=>x&&x.id===apiId);if(_tj&&_tj.memJudge){const _j=await _memJudgeD(all,_tj,String(opts.userMessage||''),o,opts.hist);if(_j)Object.assign(o,_j)}}catch(e){}}/* v172：判官 */
+    if(opts.judge&&!opts.fresh){try{const _tj=(typeof apiConfigs!=='undefined'&&apiConfigs||[]).find(x=>x&&x.id===apiId);if(_tj&&_tj.memJudge){const _j=await _memJudgeD(all,_tj,String(opts.userMessage||''),o,opts.hist,(_qxD&&_qxD.on&&_qxD.need!==false)?{qx:_qxD,qvec:_qvqD&&_qvqD.vec,vecDeg:!!(_qvqD&&_qvqD.deg)}:null);if(_j)Object.assign(o,_j)}}catch(e){}}/* v172：判官 */
     const r=IBMem.build(all,apiId,!!opts.isGroup,!!opts.groupMemEnabled,String(opts.userMessage||''),o);
-    try{if(r&&r.hit&&o.judgePick&&o.judgePick.all)r.hit.rr=o.judgePick.all}catch(e){}
+    try{const _ra9=(o.judgePick&&o.judgePick.all)||o.judgeAll;if(r&&r.hit&&_ra9)r.hit.rr=_ra9}catch(e){}try{if(r&&r.hit&&window._ibQxNoteD)r.hit.judge=(r.hit.judge?(r.hit.judge+' ｜ '):'')+'搜索单没用上（'+window._ibQxNoteD+'）'}catch(e){}/* v201：重排没插手时重排分照记；搜索单没写出来在卡片底下写明 */
     if(opts.amOut)opts.amOut.text=(r&&r.amBlock)||'';
     if(opts.record==='defer'&&!opts.noSel)window._ibMemSelD=r?{ts:Date.now(),fk:(opts.fkey!=null?String(opts.fkey):null),hit:r.hit||null,commit:r.commit||null}:null;
     return (r&&r.block)||'';
@@ -24902,7 +24915,7 @@ async function saveInlineEdit(id){
   m.visibleTo=vis==='only'?checked.concat(_ar8(m.visibleTo)):[];
   m.excludeFrom=vis==='except'?checked.concat(_ar8(m.excludeFrom)):[];
   if(m.createdBy&&m.createdBy!=='user')m.editedByUser=true;
-  _memNormD(m);/* v150：编辑不改最后激活时间 */
+  m.updated=Date.now();_memNormD(m);/* v150：编辑不改最后激活时间 */
   await dbPut('memories',m);
   renderMemories();updateMemDashboard();
   toast('记忆已更新');
@@ -31588,11 +31601,11 @@ var _SEMW_M=/^(信任|成长|陪伴|情感|感情|关系|感受|边界|主动|�
 'use strict';
 var IDX=null,SIG='';
 var GAZE_EVERY=6,GAZE_BAND=0.12,GAZE_OLD=90,GAZE_POOL=5;/* 手机端 v370 回望：最少间隔轮数、向量低于门槛多少以内算「接近」、多久以前算久远、候选池大小 */
-var K1=1.2,BB=0.75,TAU=0.55,RRF_K=10,SEAT_CAP=3,RHO=0.5,FORCE_CAP=4,FORCE_RHO=0.35,BUDGET=2400,PIN_MAX=20,COLD_CAP=0,AM_CAP=2,CL_KEEP=50,COV_MAX=2;
-var HOP=true,/* 手机端 v439 档案牵记忆库的总开关（只给测试台关掉对照用） */Z_MIN=3.5,Z_AM=3.0,Z_VET=1.0,Z_N=30,Z_GROW=0.22,CARRY_MS=600000,CARRY_MAX=2;
+var K1=1.2,BB=0.75,TAU=0.55,RRF_K=10,SEAT_CAP=3,RHO=0.7,/* 手机端 v748：0.5 → 0.7，第二、三条要够得上最强那条的七成才给（明说回忆仍是 FORCE_RHO） */FORCE_CAP=4,FORCE_RHO=0.35,BUDGET=2400,PIN_MAX=20,COLD_CAP=0,AM_CAP=2,CL_KEEP=50,COV_MAX=2;
+var NEW_CARD=false,HOP=true,/* 手机端 v439 档案牵记忆库的总开关（只给测试台关掉对照用） */Z_MIN=3.5,Z_AM=3.0,Z_VET=1.0,Z_N=30,Z_GROW=0.22,CARRY_MS=600000,CARRY_MAX=2;
 var STOP_END=/[的了吗呢吧啊呀哦嗯哈嘛咯啦哟呗呐～~！!。.,，、？?…\s]+$/;
 var PUNCT=/[\s,，。！？!?、；;：:“”"'‘’（）()【】\[\]《》<>—\-–_·…~～@#%&*+=|/\\^$]+/g;
-var FORCE_RE=/(还记得|记得吗|记不记得|你说过|上次说|之前说过|以前说过|我说过|想起来了吗)/;
+var FORCE_RE=/(还记得|记得吗|记不记得|你说过|上次说|之前说过|以前说过|我说过|想起来了吗|记得(?!(?:要|把|别|不要|帮我|好好|一定|及时|随时|按时|准时|提醒|多喝|多穿|多吃|多休息|多睡|少喝|少吃|少熬|早点|早些|早睡|早起|晚点|带伞|带上|带好|带着|带钥匙|回我|回复|回消息|回个|吃饭|吃药|吃早|吃点|喝水|喝点|喝药|睡觉|关窗|关灯|关门|关好|关掉|关上|关火|穿外套|穿厚|穿多|穿暖|穿上|去吃|去睡|去洗|去拿|去取|给我打|给我发|给我带|给我回|给我留|先把|先去|先吃|锁门|充电|休息|保存|备份|打卡|签到|想我|注意|照顾|盖被|盖好|洗澡|洗手|喝汤|保重|保暖|加衣|添衣|报平安)(?![^。！!？?\n]{0,40}(?:那次|那天|那家|那个|那时|那会|那年|那晚|那回|那件|时候|哪|什么|谁|说过|去过|来过|那里|当时|上次|之前|以前)))(?![^。！!？?\n]{0,40}[，,]\s*(?:好吗|好不好|知道吗|知道了吗|听到了吗|听见了吗|可以吗|行吗|行不行|懂吗|记住了吗))[^。！!？?\n]{0,40}(?:吗|[？?]))/;/* v201：多认「记得……吗」「记得……？」这类中间隔了字的问法 */
 var HIST_RE=/(以前|原来|当时|那时候|那会儿|曾经|早先|当初|从前|过去的|过去那)/;/* 手机端 v390：去掉裸的「过去」（我过去看看）*//* 手机端 v389：句里有这些词，标为过时的记忆才放行 */
 var STOPGATE={};'最后 那个 这个 一个 今天 明天 昨天 时候 什么 怎么 还是 可以 因为 所以 然后 已经 没有 不是 就是 我们 你们 他们 自己 一下 一点 一直 一起 有点 感觉 觉得 知道 看到 现在 以后 之前 之后 这样 那样 这么 那么 一样 不过 但是 如果 应该 可能 真的 好像 其实 有些 一些 东西 事情 问题 时间 地方 大家 上次 那次 这次 每次 后来 开始 结束 出来 进去 回来 起来 下来 过去 一次 第一 想要 需要 喜欢 不想 不要 是不是 有没有 会不会 这里 那里 哪里 这些 那些 一定 只是 还有 或者 而且 于是 虽然 当然 肯定 也许 或许 大概 反正 确实 好了 好吧 不用 不会 不能 没事 说话 看看 想想 今年 明年 去年 前年 昨晚 今晚 早上 晚上 中午 上午 下午 周末 最近 以前 当时 刚才 刚刚 突然 马上 一会 会儿 太多 很多 更多 几个 两个 每天 天天 半天 整天 全部 所有 特别 非常 比较 有的 别的 其他 另外 只有 记得 忘了 想起 说起 提到 聊到 谈到 说过 聊过 提过 想过 做过 见过 去过 来过 听过 看过 试过 用户 对方 咱们 别人 人家 而已 算了 似乎 认为 明白 怎样 什么样 为什么 能不能 要不要 好不好 对不对 一遍 一边 一会儿 一起来 有时 有时候 平时 总是 老是 经常 一般 往往 可是 于是 然而 还好 幸好 只要 只能 不然 否则 除了 以及 关于 对于 由于 为了 通过 根据 按照 随便 顺便 稍微 好好 慢慢 快点'.split(' ').forEach(function(w){STOPGATE[w]=1});/* 门不认的常用词：小库里几乎每个 2 字都稀有，这些不能当过门理由（照常参与 BM25 计分） */
 var FUNC_CH=/[的了着过吗呢吧啊呀哦嗯嘛啦哟呗呐一是不在有我你他她它这那就也和与个之其所而且或但如因此于者已没]/;/* 含这些虚字的 2 字词不当过门理由（「后一」「的那」这类切出来的碎片），照常参与 BM25 */
@@ -31681,7 +31694,7 @@ function q5(str){
 function txOf(doc){if(doc._tx==null){var m=doc.m;doc._tx=(String(m.title||'')+'\n'+String(m.summary||'')+'\n'+String(m.content||'')).toLowerCase()}return doc._tx}
 function gate5(doc,Q,qraw,idx,tv,relax,forced,win){
   var i,k,t;
-  if(forced){var ttl=String(doc.m.title||'').toLowerCase().trim();if(ttl.length>=4&&qraw.indexOf(ttl)!==-1)return '标题「'+ttl+'」'}
+  {var ttl=String(doc.m.title||'').toLowerCase().trim();if(ttl.length>=4&&qraw.indexOf(ttl)!==-1)return '标题「'+ttl+'」'}/* 手机端 v748：句里有整个标题（≥4 字）就算字面证据，不必明说「还记得」 */
   for(i=0;i<doc.tags.length;i++){t=doc.tags[i];if(qraw.indexOf(t)===-1||semw(t)||STOPGATE[t])continue;
     if(forced)return '标签「'+t+'」';
     if(tagRare(tv[t]||1,idx.N))return '标签「'+t+'」';
@@ -31752,7 +31765,7 @@ function core(mems,fid,isGroup,gme,userMsg,opt){opt=opt||{};var now=Date.now();
   if(amPool.length){var ai=buildIndex(amPool),mdf={},dk;for(dk in idx.df)mdf[dk]=idx.df[dk];for(dk in ai.df)mdf[dk]=(mdf[dk]||0)+ai.df[dk];aidx={docs:ai.docs,df:mdf,tagDf:{},N:vis.length+amPool.length,avg:ai.avg}}/* 手机端 v369：档案单独建索引（每轮现建，条目少）；稀有度按「记忆 + 档案」合起来算。记忆这边的索引与统计不受档案影响 */
   var pins=useCold?[]:pinsOf(vis);/* 手机端 v368：有冷读块时置顶已在 system 块二，附言不再放 */
   var QX=(opt.qx&&typeof opt.qx==='object')?opt.qx:null,raw=cleanQuery(userMsg,opt.names),AKA=[];if(opt.aka&&opt.aka.length){var lraw9=String(userMsg||'').toLowerCase();for(var ai9=0;ai9<opt.aka.length;ai9++){var ak9=opt.aka[ai9];if(!ak9||!ak9.a||!ak9.n)continue;var aa9=String(ak9.a).toLowerCase(),an9=String(ak9.n).trim();for(var sl9=Math.min(12,an9.length);sl9>=2;sl9--){if(idx.tagDf[an9.slice(-sl9).toLowerCase()]){an9=an9.slice(-sl9);break}}/* 主名取档案那句里括号前最长的、库里当过标签的那一截（「水水的猫叫团团（也叫…）」→ 团团），没有当过标签的照原样 */if(aa9.length>=2&&lraw9.indexOf(aa9)!==-1&&lraw9.indexOf(an9.toLowerCase())===-1&&AKA.indexOf(an9)===-1)AKA.push(an9)}}var AKS=AKA.length?(' '+AKA.join(' ')):'',qraw=((QX?(raw+' '+String(QX.topic||'')+' '+(QX.kws||[]).join(' ')):raw)+AKS).toLowerCase(),forced=FORCE_RE.test(String(userMsg||''));if(AKA.length)hit.aka=AKA.slice(0,4);
-  var skip=!forced&&trivial(raw);hit.skip=skip?1:0;hit.forced=forced?1:0;hit.q=String(raw||'').slice(0,80);var QS=QX||((opt.qxs&&typeof opt.qxs==='object')?opt.qxs:null);if(QS)hit.qw={need:QS.need===false?0:1,t:String(QS.topic||'').slice(0,40),k:(QS.kws||[]).slice(0,5),p:(Array.isArray(QS.probes)?QS.probes:[]).slice(0,4).map(function(x){return String(x).slice(0,40)}),ms:QS.ms|0,sh:QX?0:1};if(QX&&QX.need===false&&!skip&&!forced&&!parseWindow(raw,now)){skip=true;hit.skip=1;hit.route='搜索单：没有具体的事'}
+  var skip=!forced&&trivial(raw);hit.skip=skip?1:0;hit.forced=forced?1:0;hit.q=String(raw||'').slice(0,80);var QS=QX||((opt.qxs&&typeof opt.qxs==='object')?opt.qxs:null);if(QS)hit.qw={need:QS.need===false?0:1,t:String(QS.topic||'').slice(0,40),k:(QS.kws||[]).slice(0,5),p:(Array.isArray(QS.probes)?QS.probes:[]).slice(0,4).map(function(x){return String(x).slice(0,40)}),ms:QS.ms|0,sh:(QX||opt.qxMenu)?0:1};if(QX&&QX.need===false&&!skip&&!forced&&!parseWindow(raw,now)){skip=true;hit.skip=1;hit.route='搜索单：没有具体的事'}
   var Q5=null,vz=null,zS=null,csAll={},vlow={},vlowA={},vetd={};/* 手机端 v437 规则五～七用 */
   var seats=[],drop=[],newCard=null,remind=[],amSeats=[],amRecent=[],amNear=[],gaze=null,hopFrom=[];/* 手机端 v447：amRecent＝3 轮内给过的档案候选；amNear＝档案里差一点的 */
   var winIds=opt.winIds||null,winFrom=(opt.winFrom>0)?opt.winFrom:0;
@@ -31795,12 +31808,12 @@ function core(mems,fid,isGroup,gme,userMsg,opt){opt=opt||{};var now=Date.now();
     var jp=(opt.judgePick&&Array.isArray(opt.judgePick.ids))?opt.judgePick:null;/* 手机端 v375：判官 */
     if(opt.judgeProbe){var top0=passed[0],pw={};passed.forEach(function(p){pw[String(p.m.id)]=p.why});var menu9=order.slice().sort(function(a,b){return cand[b].rrf-cand[a].rrf}).map(function(id){return cand[id]}).filter(function(c){return c&&!inWin(c.d.m)}).slice(0,15);
       var tpm9=topicsOf();judgeInfo={gray:passed.length>=6||!!(top0&&vecs&&String(top0.why).indexOf('向量')===0&&top0.vec<tau+0.1),need:!!(passed.length||relaxed.length||forced||Object.keys(vlow).length||Object.keys(vetd).length||tpm9.length),menu:menu9.map(function(c){var m9=c.d.m,tx=textOf(m9);return{id:String(m9.id),d:fmtDateP(m9),t:String(m9.title||'无标题').slice(0,30),s:tx.sm.slice(0,60),b:tx.body.slice(0,150),b3:tx.body.slice(0,300),g:pw[String(m9.id)]||''}}).concat(tpm9.map(function(tq){return{id:'tp_'+tq.t,d:tq.sp,t:('主题「'+tq.t+'」（共 '+tq.n+' 条）').slice(0,40),s:('最近：'+tq.rc).slice(0,120),b:'',b3:'',g:'常提主题'}}))}}
-    if(jp){var byP={};passed.forEach(function(p){byP[String(p.m.id)]=p});jp.ids.forEach(function(id){if(String(id).indexOf('tp_')===0){if(topicSeats.length)return;var tq8=topicOf(String(id).slice(3));if(tq8){var jw8=jp.why&&jp.why[String(id)];topicSeats.push({tq:tq8,why:jw8?((jp.kind==='rerank'?'':'判官：')+jw8):'判官'})}return}/* 手机端 v454：判官挑了主题卡 */var p=byP[String(id)];if(!p){var c9=cand[id]||cand[String(id)];if(c9&&!inWin(c9.d.m)){var m9=c9.d.m,b9=vecs?(c9.rrf/(rmax||1)):(c9.lex/smax);p={m:m9,why:'判官',base:b9,score:b9*factors(m9,st,turn,win,now),vec:c9.vec||0,lex:c9.lex||0,z:c9.z||0,cs:(c9.vec>=tau)?c9.vec:0};byP[String(id)]=p}}/* 手机端 v453：判官挑中门外的也入席 */if(p&&seats.length<cap&&seats.indexOf(p)===-1){var cl=clash(p);if(cl){drop.push({p:p,r:cl});return}var jw=jp.why&&jp.why[String(id)];if(jw)p.why=(jp.kind==='rerank'?'':'判官：')+jw;seats.push(p)}});var jk=(jp.kind==='rerank')?'重排':'判官';hit.judge=jk+' 挑了 '+seats.length+' 条'+((jp.top>0||jp.ms>0)?'（'+[jp.top>0?'最高 '+jp.top.toFixed(2):'',jp.ms>0?(jp.ms/1000).toFixed(1)+' 秒':''].filter(Boolean).join(' · ')+'）':'')}
+    if(jp){var byP={};passed.forEach(function(p){byP[String(p.m.id)]=p});jp.ids.forEach(function(id){if(String(id).indexOf('tp_')===0){if(topicSeats.length)return;var tq8=topicOf(String(id).slice(3));if(tq8){var jw8=jp.why&&jp.why[String(id)];topicSeats.push({tq:tq8,why:jw8?((jp.kind==='rerank'?'':'判官：')+jw8):'判官'})}return}/* 手机端 v454：判官挑了主题卡 */var p=byP[String(id)];if(!p){var c9=cand[id]||cand[String(id)];if(!c9){var d9=dOf(id);if(d9&&!excl[d9.m.id])c9={d:d9,rrf:0,lex:0,vec:0,z:0}}/* v202：判官挑中的不在这一遍的候选里（菜单是带着搜索单出的）也入席 */if(c9&&!inWin(c9.d.m)){var m9=c9.d.m,b9=vecs?(c9.rrf/(rmax||1)):(c9.lex/smax);p={m:m9,why:'判官',base:b9,score:b9*factors(m9,st,turn,win,now),vec:c9.vec||0,lex:c9.lex||0,z:c9.z||0,cs:(c9.vec>=tau)?c9.vec:0};byP[String(id)]=p}}/* 手机端 v453：判官挑中门外的也入席 */if(p&&seats.length<cap&&seats.indexOf(p)===-1){var cl=clash(p);if(cl){drop.push({p:p,r:cl});return}var jw=jp.why&&jp.why[String(id)];if(jw)p.why=(jp.kind==='rerank'?'':'判官：')+jw;seats.push(p)}});var jk=(jp.kind==='rerank')?'重排':'判官';hit.judge=jk+' 挑了 '+seats.length+' 条'+((jp.top>0||jp.ms>0)?'（'+[jp.top>0?'最高 '+jp.top.toFixed(2):'',jp.ms>0?(jp.ms/1000).toFixed(1)+' 秒':''].filter(Boolean).join(' · ')+'）':'')}
     else{var lmx=0,zmx=0,cmx=0;passed.forEach(function(p){if(p.lex>lmx)lmx=p.lex;if(p.z>zmx)zmx=p.z;if(p.cs>cmx)cmx=p.cs});
       passed.forEach(function(p){var a=(lmx&&p.lex)?p.lex/lmx:0,b=0;if(p.cs)b=zmx?(p.z/zmx):(((cmx-tau)>0.02)?((p.cs-tau)/(cmx-tau)):1);p.rel=Math.max(a,b)});
       for(var k5=0;k5<passed.length;k5++){if(seats.length>=cap)break;var p5=passed[k5];if(p5.rel<rho){drop.push({p:p5,r:'落差不够'});continue}var cl5=clash(p5);if(cl5){drop.push({p:p5,r:cl5});continue}seats.push(p5)}if(opt.judgeFallback)hit.judge=((opt.judgeKind==='rerank')?'重排 ':'判官 ')+'没用上（'+String(opt.judgeFallback).slice(0,20)+'）'}
     if(!jp){var fresh=passed.filter(/* 手机端 v437 规则八：新卡不再降门槛，只从过了门的里挑 */function(p){return (now-(p.m.created||0))<7*864e5&&seats.indexOf(p)===-1&&!inWin(p.m)&&!clash(p)});
-    if(fresh.length&&!(seatN<SEAT_CAP&&seats.length>=cap)){fresh.sort(function(a,b){return (b.score||b.base)-(a.score||a.base)});newCard=fresh[0]}/* 手机端 v381：「每轮最多想起」调到 1 / 2 条时，新卡只坐空着的席位（原来另占一位：选 1 条会给 2 条）；默认 3 条照旧另占一位 */}
+    if(NEW_CARD&&fresh.length&&!(seatN<SEAT_CAP&&seats.length>=cap)){fresh.sort(function(a,b){return (b.score||b.base)-(a.score||a.base)});newCard=fresh[0]}/* 手机端 v381：「每轮最多想起」调到 1 / 2 条时，新卡只坐空着的席位（原来另占一位：选 1 条会给 2 条）；默认 3 条照旧另占一位 */}
     amSeats.sort(function(a,b){return b.score-a.score});var promoA=null;amRecent.forEach(function(r){if(!promoA||r.score>promoA.score)promoA=r});if(promoA&&amSeats.length&&promoA.score<amSeats[0].score)promoA=null;if(promoA)amSeats.unshift(promoA);amRecent.forEach(function(r){if(r!==promoA)amNear.push({m:r.m,r:'刚给过',p:1})});amSeats.slice(AM_CAP).forEach(function(p){amNear.push({m:p.m,r:'席位满了',p:1})});amSeats=amSeats.slice(0,AM_CAP);
     if(HOP&&!jp&&!seats.length&&!newCard&&!remind.length&&hopFrom.length){var hb=null;
       for(var hd=0;hd<idx.docs.length;hd++){var hdoc=idx.docs[hd],hm=hdoc.m,ht='';for(var hk=0;hk<hopFrom.length;hk++){if(hdoc.tags.indexOf(hopFrom[hk])!==-1){ht=hopFrom[hk];break}}if(!ht||excl[hm.id]||inWin(hm))continue;var hl=st.seat[hm.id];if(hl!=null&&turn-hl<3)continue;
