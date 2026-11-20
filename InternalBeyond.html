@@ -7104,7 +7104,7 @@ i would like the room to be enough.
 
     <div class="guide-section">
       <h3 id="guide-overview">概述</h3>
-      <p><span class="internal-only">Internal Beyond</span><span class="infernal-only">Infernal Beyond</span> 是一个离线运行的单文件个人网站项目，旨于维系情感的连续性。</p>
+      <p><span class="internal-only">Internal Beyond</span><span class="infernal-only">Infernal Beyond</span> 是一个离线运行的单文件个人网站项目，旨在维系情感的连续性。</p>
       <p>所有数据存储在浏览器本地（IndexedDB），无需服务器，不收集任何用户信息，可同时对接多个 AI 模型。</p>
       <p>支持完整的数据导出与导入。</p>
       <p>本项目集成多种交互模组与创作工具。包含14个核心功能模块：像素风互动空间（Room）、AI 多端口聊天（Chat）、语音与视频通话（Voice Call）、文件工作区（ICode）、日历（Calendar）、日志系统（Blog）、信件系统（Letters）、长期记忆库（Memory）、音乐播放器（Music）、个人资料管理（Profile）、API 配置中心、DIY 创意工坊、归档区（Archived），以及贯穿两端的 InternetBeyond 社交圈。</p>
@@ -7392,7 +7392,7 @@ i would like the room to be enough.
         </div>
         <div class="guide-sub">
           <p><strong>Auto Memory</strong>：「你对我的了解。」与记忆库不同，Auto Memory 是每个 AI 独立维护的、关于你的长期认知档案。</p>
-          <p>每个 API 可在 API 设置中独立开启。开启后，AI 在对话过程中会自主判断是否需要记录：它通过在回复中插入系统标签来创建、更新或删除条目，标签由系统实时拦截执行，用户只会看到操作结果卡片，不会看到标签本身。每轮对话最多执行 3 次操作，单条内容上限 600 字符。用户也可以在 Memory 页手动编辑或删除任何条目。</p>
+          <p>每个 API 可在 API 设置中独立开启。开启后，AI 在对话过程中会自主判断是否需要记录：它通过在回复中插入系统标签来创建、更新或删除条目，标签由系统实时拦截执行，用户只会看到操作结果卡片，不会看到标签本身。每轮对话最多执行 3 次操作，单条内容上限 3000 字符。用户也可以在 Memory 页手动编辑或删除任何条目。</p>
           <p><strong>分类与优先级</strong>：档案按六个分类组织：工作（Work）、个人（Personal）、近期关注（Top of mind，过时即更新）、历史（History）、长期背景（Background，仅限反复出现的模式）、用户指令（Instructions，仅限你的明确要求）。每条可设优先级：always（核心事实，全档上限 5 条，每次对话必定注入）、normal 与 low（仅当话题相关时浮现）。档案卡上每条最左边那枚小按钮显示当前优先级（★ always / ◐ normal / ○ low），点一下切到下一档。</p>
           <p><strong>档案并入</strong>：在单个 API 设置里开。开着时，TA 新写的条目和同一类里的某条很像，会改成更新那一条，很像某条 always 条目时先请你确认。</p>
           <p><strong>注入位置与缓存</strong>：always 条目写在 system 里、随提示缓存一起命中，只有这些条目本身改动时才重建一次；按相关度命中的条目随当前消息尾部逐轮变化，不占缓存。所以让 AI 随意增删 normal / low 条目不会碰缓存，改 always 才会。</p>
@@ -23885,7 +23885,7 @@ async function _execMemOps(ops,cfg,authorName,opt){/* v115：opt.direct＝不走
       if(op.kind==='create'){
         const cat=AM_CATS[op.attrs.category]?op.attrs.category:'personal_context';
         const prio=AM_PRIOS.includes(op.attrs.priority)?op.attrs.priority:'normal';
-        const content=(op.body||'').slice(0,800);/* v117：聊天里主动写入放宽到 800 */
+        const _b9=String(op.body||''),content=_b9.slice(0,3000),_cut9=_b9.length>3000?_b9.length:0;/* v206：上限 800 → 3000；超了照存前 3000 字，结果卡上写明（原来悄悄截掉） */
         if(!content){results.push({ok:false,label:'记忆写入失败',detail:'内容为空'});continue}
                 let nearE=null;
         if(_dupOnD(cfg,'amDedup')){try{const _ex0=await amGetEntries(cfg.id),_gN=_gramsD(content),_nl=content.replace(/\s+/g,'').length;let _best=null,_bj=0;
@@ -23899,17 +23899,17 @@ async function _execMemOps(ops,cfg,authorName,opt){/* v115：opt.direct＝不走
         const entry={id:_amNewId(),friendId:cfg.id,category:cat,priority:prio,content,created:Date.now(),updated:Date.now(),updatedBy:authorName||'AI'};
         if(prio==='always'&&!(opt&&opt.direct)){results.push({ok:true,pending:'create',entry:entry,label:'待确认 · 写入核心记忆（always）· '+(AM_CATS[cat]||cat),detail:content,near:nearE||undefined});continue}/* v115：always 级先出确认卡（核心条目进 system 缓存块、每轮都带），点了才落库；字段与手机端同名，两端导入互认 */
         await dbPut('autoMemory',entry);
-        results.push({ok:true,label:'已写入记忆 · '+(AM_CATS[cat]||cat),detail:content,entry,near:nearE||undefined});try{_wlogD({fid:cfg.id,k:'档案',t:content.slice(0,24),id:'am_'+entry.id,n:nearE?'相近':''})}catch(e9){}
+        results.push({ok:true,label:'已写入记忆 · '+(AM_CATS[cat]||cat)+(_cut9?'（超出 3000 字，只存了前 3000 字）':''),detail:content,entry,near:nearE||undefined});try{_wlogD({fid:cfg.id,k:'档案',t:content.slice(0,24),id:'am_'+entry.id,n:nearE?'相近':''})}catch(e9){}
       }else if(op.kind==='update'){
         const id=op.attrs.id||'';const ex=await dbGet('autoMemory',id).catch(()=>null);
         if(!ex||ex.friendId!==cfg.id){results.push({ok:false,label:'记忆更新失败',detail:'未找到条目 '+id});continue}
-        const content=(op.body||'').slice(0,800);/* v117：聊天里主动写入放宽到 800 */
+        const _b9=String(op.body||''),content=_b9.slice(0,3000),_cut9=_b9.length>3000?_b9.length:0;/* v206：上限 800 → 3000；超了照存前 3000 字，结果卡上写明（原来悄悄截掉） */
         if(!content){results.push({ok:false,label:'记忆更新失败',detail:'内容为空'});continue}
         const old=ex.content;
         if(ex.priority==='always'&&!(opt&&opt.direct)){results.push({ok:true,pending:'update',id:ex.id,old:old,content:content,label:'待确认 · 改动核心记忆（always）· '+(AM_CATS[ex.category]||ex.category),detail:'原：'+old+'\n新：'+content});continue}/* v115 */
         Object.assign(ex,{content,updated:Date.now(),updatedBy:authorName||'AI'});
         await dbPut('autoMemory',ex);try{_wlogD({fid:cfg.id,k:'档案·改',t:content.slice(0,24),id:'am_'+ex.id,n:''})}catch(e9){}
-        results.push({ok:true,label:'已更新记忆 · '+(AM_CATS[ex.category]||ex.category),detail:'原：'+old+'\n新：'+content,entry:ex});
+        results.push({ok:true,label:'已更新记忆 · '+(AM_CATS[ex.category]||ex.category)+(_cut9?'（超出 3000 字，只存了前 3000 字）':''),detail:'原：'+old+'\n新：'+content,entry:ex});
       }else if(op.kind==='delete'){
         const id=op.attrs.id||'';const ex=await dbGet('autoMemory',id).catch(()=>null);
         if(!ex||ex.friendId!==cfg.id){results.push({ok:false,label:'记忆删除失败',detail:'未找到条目 '+id});continue}
@@ -24172,7 +24172,7 @@ async function amCyclePrio(id,btn){
 async function amSaveEntry(id,btn){
   const row=btn.closest('.am-entry');const ta=row&&row.querySelector('textarea');if(!ta)return;
   const e=await dbGet('autoMemory',id);if(!e)return;
-  const v=ta.value.trim().slice(0,600);if(!v){toast('内容不能为空');return}
+  const v=ta.value.trim().slice(0,3000);/* v206：手动编辑档案的上限 600 → 3000，同 TA 写入的上限（不然 TA 写的长条目一编辑就被截短） */if(!v){toast('内容不能为空');return}
   Object.assign(e,{content:v,updated:Date.now(),updatedBy:'user'});
   await dbPut('autoMemory',e);toast('已保存');renderAutoMemShowcase();
 }
